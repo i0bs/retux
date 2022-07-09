@@ -12,6 +12,9 @@ class BotProtocol(Protocol):
     def __init__(self, intents: Intents):
         ...
 
+    def start(self, token: str):
+        ...
+
 
 class Bot(BotProtocol):
     """Represents a bot's connection to Discord."""
