@@ -129,9 +129,11 @@ class ApplicationCommandOption:
     These options will only show if this type is `SUB_COMMAND` or
     `SUB_COMMAND_GROUP`.
     """
+
     # TODO: implement a channel type enumerable.
     # channel_types: list[ChannelType] | None = field(converter=list, default=None)
     # """The types of channels the option will filter to, if present."""
+
     min_value: int | None = field(default=None)
     """The minimum value permitted for the application command option."""
     max_value: int | None = field(default=None)
