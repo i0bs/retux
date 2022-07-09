@@ -1,4 +1,7 @@
 import retux
+import logging
 
-bot = retux.Bot(retux.Intents.ALL)
+log = logging.basicConfig(level=logging.DEBUG)
+
+bot = retux.Bot(retux.Intents.NON_PRIVILEGED)
 bot.start("")

@@ -2,7 +2,7 @@ from typing import Protocol
 
 from trio import run
 
-from ..api.gateway import GatewayClient
+from ..api import GatewayClient
 from ..api.http import HTTPClient
 from ..const import MISSING
 from .flags import Intents
@@ -39,9 +39,9 @@ class Bot(BotProtocol):
         # Only in necessary areas, such as the Gateway
         # and HTTP clients will we ever need it to run operations.
 
-        self._gateway = GatewayClient(token)
+        self._gateway = GatewayClient(token, intents=self.intents)
         self._http = HTTPClient(token)
 
         # The nice thing here is that Trio's entry-point
         # is way more simplified.
-        run(self._gateway.connect())
+        run(self._gateway.connect)

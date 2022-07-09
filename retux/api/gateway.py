@@ -1,11 +1,12 @@
 from enum import Enum
 from json import dumps, loads
 from logging import getLogger
+from random import random
 from sys import platform
 from time import perf_counter
 from typing import Any, Protocol
 
-from attrs import define, field, fields_dict
+from attrs import asdict, define, field
 from cattrs import structure_attrs_fromdict
 from trio import sleep_until
 from trio_websocket import ConnectionClosed, WebSocketConnection, open_websocket_url
@@ -30,7 +31,7 @@ class _GatewayMeta:
     compress : `str`, optional
         The compression type on Gateway payloads.
     heartbeat_interval : `float`, optional
-        The interval at which a heartbeat is sent.
+        The heartbeat used to keep a Gateway connection alive.
     session_id : `str`, optional
         The ID of an existent session, used for when resuming a lost connection.
     seq : `int`, optional
@@ -41,13 +42,13 @@ class _GatewayMeta:
     """The version of the Gateway."""
     encoding: str = field()
     """The encoding type on Gateway payloads."""
-    compress: str = field(default=None)
+    compress: str | None = field(default=None)
     """The compression type on Gateway payloads."""
-    heartbeat_interval: float = field(default=MISSING)
-    """The interval at which a heartbeat is sent."""
-    session_id: str = field(default=None)
+    heartbeat_interval: float | None = field(default=None)
+    """The heartbeat used to keep a Gateway connection alive."""
+    session_id: str | None = field(default=None)
     """The ID of an existent session, used for when resuming a lost connection."""
-    seq: int = field(default=None)
+    seq: int | None = field(default=None)
     """The sequence number on an existent session."""
 
 
@@ -96,7 +97,7 @@ class _GatewayPayload:
 
     Attributes
     ----------
-    op (opcode) : `_GatewayOpCode`
+    op (opcode) : `int`, `_GatewayOpCode`
         The opcode of the payload.
     d (data) : `typing.Any`
         The payload's event data.
@@ -106,13 +107,13 @@ class _GatewayPayload:
         The name of the payload's event.
     """
 
-    op: _GatewayOpCode = field(converter=_GatewayOpCode)
+    op: int | _GatewayOpCode = field(converter=int)
     """The opcode of the payload."""
-    d: Any = field(default=None)
+    d: Any | None = field(default=None)
     """The payload's event data."""
-    s: int = field(default=None)
+    s: int | None = field(default=None)
     """The sequence number, used for resuming sessions and heartbeats."""
-    t: str = field(default=None)
+    t: str | None = field(default=None)
     """The name of the payload's event."""
 
     # TODO: look into seeing if property methods are still
@@ -204,7 +205,7 @@ class GatewayClient(GatewayProtocol):
         Metadata representing connection parameters for the Gateway.
     _closed : `bool`
         Whether the Gateway connection is closed or not.
-    _last_ack : `tuple[float]`
+    _last_ack : `list[float]`
         The before/after time of the last Gateway event tracked. See `latency` for Gateway connection timing.
     """
 
@@ -213,7 +214,7 @@ class GatewayClient(GatewayProtocol):
     # TODO: Add voice state changing
     # TODO: Add request member ability.
 
-    __slots__ = ("token", "intents", "_conn", "_meta", "_closed", "_last_ack")
+    __slots__ = ("token", "intents", "_conn", "_meta", "_last_ack")
     token: str
     """The bot's token."""
     intents: Intents
@@ -224,7 +225,7 @@ class GatewayClient(GatewayProtocol):
     """Metadata representing connection parameters for the Gateway."""
     _closed: bool = True
     """Whether the Gateway connection is closed or not."""
-    _last_ack: tuple[float]
+    _last_ack: list[float]
     """The before/after time of the last Gateway event tracked. See `latency` for Gateway connection timing."""
 
     def __init__(
@@ -263,6 +264,7 @@ class GatewayClient(GatewayProtocol):
         Returns
         -------
         `_GatewayPayload`
+            A class of the payload data.
         """
 
         # We're standardising every response from
@@ -303,7 +305,7 @@ class GatewayClient(GatewayProtocol):
         # in the form of bytes.
 
         try:
-            json = dumps(fields_dict(payload))
+            json = dumps(asdict(payload))
             resp = await self._conn.send_message(json)  # noqa
         except ConnectionClosed:
             logger.fatal("The connection to Discord's Gateway has closed.")
@@ -312,7 +314,7 @@ class GatewayClient(GatewayProtocol):
 
     async def connect(self):
         """Connects to the Gateway and initiates a WebSocket state."""
-        self._last_ack = (perf_counter(), perf_counter())
+        self._last_ack = [perf_counter(), perf_counter()]
         self._conn = None
 
         # FIXME: this connection type will only work with JSON in mind.
@@ -322,7 +324,7 @@ class GatewayClient(GatewayProtocol):
 
         async with open_websocket_url(
             f"{__gateway_url__}?v={self._meta.version}&encoding={self._meta.encoding}"
-            f"&compress={'' if self._meta.compress is None else self._meta.compress}"
+            f"{'' if self._meta.compress is None else f'&compress={self._meta.compress}'}"
         ) as self._conn:
             self._closed = self._conn.closed
 
@@ -349,13 +351,13 @@ class GatewayClient(GatewayProtocol):
             The payload being sent from the Gateway.
         """
         logger.debug(
-            f"Tracking payload: {payload.opcode}{'.' if payload.name is None else ', data is present.'}"
+            f"Tracking payload: {payload.opcode}{'.' if payload.name is None else f' ({payload.name})'}"
         )
 
-        match payload.opcode:
+        match _GatewayOpCode(payload.opcode):
             case _GatewayOpCode.HELLO:
-                self._meta.heartbeat_interval = payload.data.get("heartbeat_interval") / 1000
-                await self._heartbeat(self._meta.heartbeat_interval)
+                self._meta.heartbeat_interval = payload.data["heartbeat_interval"] / 1000
+                await self._heartbeat()
 
                 logger.debug("A heartbeat has been started.")
 
@@ -368,7 +370,11 @@ class GatewayClient(GatewayProtocol):
                 # trio_websocket allows us to treat a send_message()
                 # call as a blocking condition and waive it. In coordination
                 # with sleep_until for exact time execution, we're able to
-                # use this to our advantage for perfected heartbeats.
+                # use this to our advantage for heartbeats.
+
+                # TODO: look into possible heartbeat duplication packet sending.
+                # This may be incorrect, as most closing codes have been "NORMAL_CLOSURE."
+                # Is this a possible FIXME as well?
 
                 await self._heartbeat(self._meta.heartbeat_interval)
             case _GatewayOpCode.HEARTBEAT_ACK:
@@ -396,6 +402,8 @@ class GatewayClient(GatewayProtocol):
                 )
             case "READY":
                 logger.debug("The Gateway has declared a ready connection.")
+                self._meta.session_id = payload.data["session_id"]
+                self._meta.seq = payload.sequence
 
     # TODO: Look into a better way to send data for payload structuring
     # that doesn't necessarily mean a dict. This is perfectly fine, but,
@@ -406,7 +414,7 @@ class GatewayClient(GatewayProtocol):
     async def _identify(self):
         """Sends an identification payload to the Gateway."""
         payload = _GatewayPayload(
-            op=_GatewayOpCode.IDENTIFY,
+            op=_GatewayOpCode.IDENTIFY.value,
             d={
                 "token": self.token,
                 "intents": self.intents.value,
@@ -419,7 +427,7 @@ class GatewayClient(GatewayProtocol):
     async def _resume(self):
         """Sends a resuming payload to the Gateway."""
         payload = _GatewayPayload(
-            op=_GatewayOpCode.RESUME,
+            op=_GatewayOpCode.RESUME.value,
             d={
                 "token": self.token,
                 "session_id": self._meta.session_id,
@@ -429,12 +437,24 @@ class GatewayClient(GatewayProtocol):
         await self._send(payload)
         logger.debug("Sending a resuming payload to the Gateway.")
 
-    async def _heartbeat(self, heartbeat_interval: float):
+    async def _heartbeat(self):
         """Sends a heartbeat payload to the Gateway."""
-        payload = _GatewayPayload(op=_GatewayOpCode.HEARTBEAT, d=self._meta.seq)
+        payload = _GatewayPayload(op=_GatewayOpCode.HEARTBEAT.value, d=self._meta.seq)
+
+        # jitter is an argument supplied to the heartbeat_interval which
+        # the Gateway may additionally take to allow premature sending
+        # of heartbeats. While we're using trio.sleep_until() which
+        # calls on exact time, we may still want to delay by a fraction
+        # number in order to allow latency coverage on the client and
+        # not the host.
+        #
+        # We find this "necessary." :)
+
+        jitter: float = random()
+
         await self._send(payload)
         logger.debug("Sending a heartbeat payload to the Gateway.")
-        await sleep_until(heartbeat_interval)
+        await sleep_until(self._meta.heartbeat_interval * jitter)
 
     @property
     def latency(self) -> float:
