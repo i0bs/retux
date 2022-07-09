@@ -1,6 +1,6 @@
 # Testing files
 .env
-test.py
+_test.py
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

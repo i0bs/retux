@@ -356,15 +356,14 @@ class GatewayClient(GatewayProtocol):
 
         match _GatewayOpCode(payload.opcode):
             case _GatewayOpCode.HELLO:
-                self._meta.heartbeat_interval = payload.data["heartbeat_interval"] / 1000
-                await self._heartbeat()
-
-                logger.debug("A heartbeat has been started.")
-
                 if not self._meta.session_id:
                     await self._identify()
-                else:
+                elif self._meta.session_id:
                     await self._resume()
+                else:
+                    self._meta.heartbeat_interval = payload.data["heartbeat_interval"] / 1000
+                    await self._heartbeat()
+                    logger.debug("A heartbeat has been started.")
             case _GatewayOpCode.HEARTBEAT:
 
                 # trio_websocket allows us to treat a send_message()
@@ -389,6 +388,8 @@ class GatewayClient(GatewayProtocol):
             case _GatewayOpCode.INVALID_SESSION:
                 self._meta.session_id = None
                 await self.connect()
+            case _GatewayOpCode.RECONNECT:
+                await self._resume()
             case _GatewayOpCode.DISPATCH:
 
                 # TODO: implement a dispatch call.
@@ -401,9 +402,11 @@ class GatewayClient(GatewayProtocol):
                     f"The connection was resumed. (session: {self._meta.session_id}, sequence: {self._meta.seq}"
                 )
             case "READY":
-                logger.debug("The Gateway has declared a ready connection.")
                 self._meta.session_id = payload.data["session_id"]
                 self._meta.seq = payload.sequence
+                logger.debug(
+                    f"The Gateway has declared a ready connection. (session: {self._meta.session_id}, sequence: {self._meta.seq}"
+                )
 
     # TODO: Look into a better way to send data for payload structuring
     # that doesn't necessarily mean a dict. This is perfectly fine, but,
