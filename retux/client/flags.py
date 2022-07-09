@@ -1,7 +1,7 @@
-import enum
+from enum import IntFlag
 
 
-class Intents(enum.IntFlag):
+class Intents(IntFlag):
     """
     Intents, otherwise known as "Gateway intents" are a set of
     bitwise values that help control the computational burden

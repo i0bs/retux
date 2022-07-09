@@ -99,7 +99,7 @@ class _GatewayPayload:
     ----------
     op (opcode) : `int`, `_GatewayOpCode`
         The opcode of the payload.
-    d (data) : `typing.Any`
+    d (data) : `typing.Any`, optional
         The payload's event data.
     s (sequence) : `int`, optional
         The sequence number, used for resuming sessions and heartbeats.
