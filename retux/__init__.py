@@ -4,8 +4,8 @@ An API wrapper built with good intentions.
 
 ---
 
-This project is currently closed-source. In order to get access
-to this project, you must have a valid token handed to you.
+This project is open-sourced! If you'd like to make a
+contribution, feel free to make a pull request.
 
 - GitHub repository: https://github.com/ffl0w/retux
 - Documentation: https://retux.rtfd.io (or see `/examples`!)
