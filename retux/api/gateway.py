@@ -319,16 +319,16 @@ class GatewayClient(GatewayProtocol):
 
         match _GatewayOpCode(payload.opcode):
             case _GatewayOpCode.HELLO:
-                if not self._meta.session_id:
+                if self._meta.session_id:
+                    logger.debug("Prior connection found, trying to resume.")
+                    await self._resume()
+                else:
                     logger.debug("New connection found, identifying to the Gateway.")
                     await self._identify()
 
                     self._meta.heartbeat_interval = payload.data["heartbeat_interval"] / 1000
                     await self._heartbeat()
                     logger.debug("A heartbeat has been started.")
-                elif self._meta.session_id:
-                    logger.debug("Prior connection found, trying to resume.")
-                    await self._resume()
             case _GatewayOpCode.HEARTBEAT:
 
                 # TODO: look into possible heartbeat duplication packet sending.
@@ -368,7 +368,6 @@ class GatewayClient(GatewayProtocol):
                 logger.debug(
                     f"The Gateway has declared a ready connection. (session: {self._meta.session_id}, sequence: {self._meta.seq}"
                 )
-                logger.debug(f"Inner data package: {payload.data}")
 
     async def _dispatch(self, name: str, data: dict):
         """
