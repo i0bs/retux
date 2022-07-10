@@ -14,7 +14,7 @@ from retux.api.error import HTTPException
 
 from ..const import MISSING, NotNeeded, __api_url__, __repo_url__, __version__
 
-logger = getLogger("retux.api.http")
+logger = getLogger(__name__)
 
 
 class _RouteMethod(Enum):

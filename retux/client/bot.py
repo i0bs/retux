@@ -8,7 +8,7 @@ from ..const import MISSING, NotNeeded
 from .flags import Intents
 from logging import getLogger
 
-logger = getLogger("retux.client.bot")
+logger = getLogger(__name__)
 
 
 class BotProtocol(Protocol):

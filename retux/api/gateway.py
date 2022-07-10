@@ -14,7 +14,7 @@ from trio_websocket import ConnectionClosed, WebSocketConnection, open_websocket
 from ..client.flags import Intents
 from ..const import MISSING, NotNeeded, __gateway_url__
 
-logger = getLogger("retux.api.gateway")
+logger = getLogger(__name__)
 
 
 @define()
