@@ -32,7 +32,7 @@ class Bot(BotProtocol):
         The bot's intents.
     _gateway : `GatewayClient`
         The bot's gateway connection.
-    _http : `HTTPClient`
+    http : `HTTPClient`
         The bot's HTTP connection.
     _calls : `dict[str, list[typing.Coroutine]]`
         A set of callbacks registered by their name to their function.
@@ -41,9 +41,9 @@ class Bot(BotProtocol):
 
     intents: Intents
     """The bot's intents."""
-    _gateway: GatewayClient
+    gateway: GatewayClient
     """The bot's gateway connection."""
-    _http: HTTPClient
+    http: HTTPClient
     """The bot's HTTP connection."""
     _calls: dict[str, list[Coroutine]] = {}
     """
@@ -54,15 +54,15 @@ class Bot(BotProtocol):
     def __init__(self, intents: Intents):
         self.intents = intents
         self._gateway = MISSING
-        self._http = MISSING
+        self.http = MISSING
 
-    def start(self, token: str):
+    async def start(self, token: str):
         """Starts a connection with Discord."""
         self._gateway = GatewayClient(token, intents=self.intents)
-        self._http = HTTPClient(token)
+        self.http = HTTPClient(token)
 
-        run(self._listen)
-        run(self._gateway.connect)
+        await self._gateway.__aenter__()
+        await self._listen()
 
     async def on(self, coro: Coroutine, name: NotNeeded[str] = MISSING) -> Callable[..., Any]:
         """

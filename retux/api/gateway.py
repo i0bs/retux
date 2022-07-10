@@ -1,14 +1,13 @@
 from enum import IntEnum
 from json import dumps, loads
 from logging import getLogger
-from random import random
 from sys import platform
 from time import perf_counter
 from typing import Any, Protocol
 
 from attrs import asdict, define, field
 from cattrs import structure_attrs_fromdict
-from trio import sleep_until
+from trio import sleep_until, open_nursery
 from trio_websocket import ConnectionClosed, WebSocketConnection, open_websocket_url
 
 from ..client.flags import Intents
@@ -126,6 +125,9 @@ class GatewayProtocol(Protocol):
     async def connect(self):
         ...
 
+    async def reconnect(self):
+        ...
+
     @property
     def latency(self):
         ...
@@ -211,6 +213,16 @@ class GatewayClient(GatewayProtocol):
         self.token = token
         self.intents = intents
         self._meta = _GatewayMeta(version=version, encoding=encoding, compress=compress)
+        self._tasks = None  # this is just for the nursery process with heartbeats.
+
+    async def __aenter__(self):
+        self._tasks = await open_nursery().__aenter__()
+        self._tasks.start_soon(self.reconnect)
+        self._tasks.start_soon(self._heartbeat)
+        return self
+
+    async def __aexit__(self, *exc):
+        return await self._tasks.__aexit__(*exc)
 
     async def _receive(self) -> _GatewayPayload:
         """
@@ -234,7 +246,7 @@ class GatewayClient(GatewayProtocol):
         except ConnectionClosed:
             logger.warn("The connection to Discord's Gateway has closed.")
             self._closed = True
-            await self.connect()
+            await self.reconnect()
 
     async def _send(self, payload: _GatewayPayload):
         """
@@ -254,13 +266,12 @@ class GatewayClient(GatewayProtocol):
             resp = await self._conn.send_message(json)  # noqa
         except ConnectionClosed:
             logger.warn("The connection to Discord's Gateway has closed.")
-            self._closed = True
-            await self.connect()
+            await self._conn.aclose()
+            await self.reconnect()
 
     async def connect(self):
         """Connects to the Gateway and initiates a WebSocket state."""
         self._last_ack = [perf_counter(), perf_counter()]
-        self._conn = None
 
         # FIXME: this connection type will only work with JSON in mind.
         # if other compression or encoding types are supplied, they
@@ -271,20 +282,22 @@ class GatewayClient(GatewayProtocol):
             f"{__gateway_url__}?v={self._meta.version}&encoding={self._meta.encoding}"
             f"{'' if self._meta.compress is None else f'&compress={self._meta.compress}'}"
         ) as self._conn:
-            self._closed = self._conn.closed
-
             if self._closed:
-                await self.connect()
+                await self._conn.aclose()
+                await self.reconnect()
 
             while not self._closed:
                 data = await self._receive()
 
-                if self._conn is None:
-                    await self.connect()
-                    break
-
                 if data:
                     await self._track(data)
+
+    async def reconnect(self):
+        """Reconnects to the Gateway and reinitiates a WebSocket state."""
+        if self._closed:
+            await self.connect()
+        else:
+            logger.info("Told to reconnect, but did not need to.")
 
     async def _track(self, payload: _GatewayPayload):
         """
@@ -307,17 +320,7 @@ class GatewayClient(GatewayProtocol):
                 else:
                     logger.debug("New connection found, identifying to the Gateway.")
                     await self._identify()
-
                     self._meta.heartbeat_interval = payload.data["heartbeat_interval"] / 1000
-                    await self._heartbeat()
-                    logger.debug("A heartbeat has been started.")
-            case _GatewayOpCode.HEARTBEAT:
-
-                # TODO: look into possible heartbeat duplication packet sending.
-                # This may be incorrect, as most closing codes have been "NORMAL_CLOSURE."
-                # Is this a possible FIXME as well?
-
-                await self._heartbeat(self._meta.heartbeat_interval)
             case _GatewayOpCode.HEARTBEAT_ACK:
 
                 # FIXME: this may produce inaccurate results if multiple
@@ -332,10 +335,16 @@ class GatewayClient(GatewayProtocol):
                     "Our Gateway connection has suddenly invalidated. Starting new connection."
                 )
                 self._meta.session_id = None
-                await self.connect()
+                await self._conn.aclose()
+                await self.reconnect()
             case _GatewayOpCode.RECONNECT:
-                logger.info("The Gateway has told us to reconnect. Resuming last known connection.")
-                await self._resume()
+                logger.info("The Gateway has told us to reconnect.")
+                if payload.data:
+                    logger.info("Resuming last known connection.")
+                    await self._resume()
+                else:
+                    await self._conn.aclose()
+                    await self.reconnect()
             case _GatewayOpCode.DISPATCH:
                 logger.debug(f"Dispatching {payload.name}")
                 await self._dispatch(payload.name, payload.data)
@@ -412,11 +421,11 @@ class GatewayClient(GatewayProtocol):
     async def _heartbeat(self):
         """Sends a heartbeat payload to the Gateway."""
         payload = _GatewayPayload(op=_GatewayOpCode.HEARTBEAT.value, d=self._meta.seq)
-        jitter: float = random()
 
         logger.debug("Sending a heartbeat payload to the Gateway.")
-        await self._send(payload)
-        await sleep_until(self._meta.heartbeat_interval * jitter)
+        while not self._closed:
+            await self._send(payload)
+            await sleep_until(self._meta.heartbeat_interval)
 
     @property
     def latency(self) -> float:
