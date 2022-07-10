@@ -41,19 +41,6 @@ class _Route:
     `channel_id` and `guild_id` are considered as top-level identifiers. On a given
     representation, these will be excluded. You will need to call these values
     separately in order to retrieve their values.
-
-    ---
-
-    Attributes
-    ----------
-    method : `_RouteMethod`
-        The route's method, e.g. `GET`.
-    path : `str`
-        The path or URL to the route.
-    channel_id : `str`, optional
-        The channel ID associated with this route. This is for route-based rate limits.
-    guild_id : `str`, optional
-        The guild ID associated with this route. This is for route-based rate limits.
     """
 
     method: _RouteMethod = field(converter=_RouteMethod)
@@ -101,18 +88,7 @@ class _Route:
 
 @define(slots=False)
 class _Limit:
-    """
-    Represents a bucket that exists for a route.
-
-    Attributes
-    ----------
-    event : `trio.Event`
-        The asynchronous event associated to the bucket,
-        used for blocking conditions.
-    reset_after : `float`, optional
-        The time remaining before the event may be reset.
-        Defaults to `0.0`.
-    """
+    """Represents a bucket that exists for a route."""
 
     event: Event = field(default=Event)
     """The asynchronous event associated to the bucket, used for blocking conditions."""

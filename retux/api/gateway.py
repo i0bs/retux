@@ -19,24 +19,7 @@ logger = getLogger(__name__)
 
 @define()
 class _GatewayMeta:
-    """
-    Represents metadata for a Gateway connection.
-
-    Attributes
-    ----------
-    version : `int`
-        The version of the Gateway.
-    encoding : `str`
-        The encoding type on Gateway payloads.
-    compress : `str`, optional
-        The compression type on Gateway payloads.
-    heartbeat_interval : `float`, optional
-        The heartbeat used to keep a Gateway connection alive.
-    session_id : `str`, optional
-        The ID of an existent session, used for when resuming a lost connection.
-    seq : `int`, optional
-        The sequence number on an existent session.
-    """
+    """Represents metadata for a Gateway connection."""
 
     version: int = field()
     """The version of the Gateway."""
@@ -92,19 +75,6 @@ class _GatewayPayload:
 
     - `op` (`opcode`) is `DISPATCH`.
     - A `RESUME` call has been made. (specific to the former)
-
-    ---
-
-    Attributes
-    ----------
-    op (opcode) : `int`, `_GatewayOpCode`
-        The opcode of the payload.
-    d (data) : `typing.Any`, optional
-        The payload's event data.
-    s (sequence) : `int`, optional
-        The sequence number, used for resuming sessions and heartbeats.
-    t (name) : `str`, optional
-        The name of the payload's event.
     """
 
     op: int | _GatewayOpCode = field(converter=int)
@@ -352,13 +322,13 @@ class GatewayClient(GatewayProtocol):
                 if not self._meta.session_id:
                     logger.debug("New connection found, identifying to the Gateway.")
                     await self._identify()
-                elif self._meta.session_id:
-                    logger.debug("Prior connection found, trying to resume.")
-                    await self._resume()
-                else:
+
                     self._meta.heartbeat_interval = payload.data["heartbeat_interval"] / 1000
                     await self._heartbeat()
                     logger.debug("A heartbeat has been started.")
+                elif self._meta.session_id:
+                    logger.debug("Prior connection found, trying to resume.")
+                    await self._resume()
             case _GatewayOpCode.HEARTBEAT:
 
                 # TODO: look into possible heartbeat duplication packet sending.
