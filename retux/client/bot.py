@@ -41,7 +41,7 @@ class Bot(BotProtocol):
 
     intents: Intents
     """The bot's intents."""
-    gateway: GatewayClient
+    _gateway: GatewayClient
     """The bot's gateway connection."""
     http: HTTPClient
     """The bot's HTTP connection."""
