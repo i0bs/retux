@@ -376,18 +376,17 @@ class GatewayClient(GatewayProtocol):
                 logger.debug(f"The heartbeat was acknowledged. (took {self.latency}ms.)")
                 self._last_ack[0] = perf_counter()
             case _GatewayOpCode.INVALID_SESSION:
-                self._meta.session_id = None
-                await self.connect()
                 logger.info(
                     "Our Gateway connection has suddenly invalidated. Starting new connection."
                 )
+                self._meta.session_id = None
+                await self.connect()
             case _GatewayOpCode.RECONNECT:
-                await self._resume()
                 logger.info("The Gateway has told us to reconnect. Resuming last known connection.")
+                await self._resume()
             case _GatewayOpCode.DISPATCH:
-                await self._dispatch(payload.name, payload.data)
-
                 logger.debug(f"Dispatching {payload.name}")
+                await self._dispatch(payload.name, payload.data)
         match payload.name:
             case "RESUMED":
                 logger.debug(
@@ -443,8 +442,8 @@ class GatewayClient(GatewayProtocol):
                 "properties": {"os": platform, "browser": "retux", "device": "retux"},
             },
         )
-        await self._send(payload)
         logger.debug("Sending an identification payload to the Gateway.")
+        await self._send(payload)
 
     async def _resume(self):
         """Sends a resuming payload to the Gateway."""
@@ -456,16 +455,16 @@ class GatewayClient(GatewayProtocol):
                 "seq": self._meta.seq,
             },
         )
-        await self._send(payload)
         logger.debug("Sending a resuming payload to the Gateway.")
+        await self._send(payload)
 
     async def _heartbeat(self):
         """Sends a heartbeat payload to the Gateway."""
         payload = _GatewayPayload(op=_GatewayOpCode.HEARTBEAT.value, d=self._meta.seq)
         jitter: float = random()
 
-        await self._send(payload)
         logger.debug("Sending a heartbeat payload to the Gateway.")
+        await self._send(payload)
         await sleep_until(self._meta.heartbeat_interval * jitter)
 
     @property
