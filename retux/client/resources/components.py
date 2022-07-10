@@ -69,15 +69,15 @@ class ButtonStyle(IntEnum):
 
     Constants
     ---------
-    PRIMARY, BLUE
+    PRIMARY (BLUE)
         A "CTA" indication.
-    SECONDARY, GREY
+    SECONDARY (GREY)
         A secondary usage indication.
-    SUCCESS, GREEN
+    SUCCESS (GREEN)
         A successful indication.
-    DANGER, RED
+    DANGER (RED)
         A dangerous or destructive indication.
-    LINK, URL
+    LINK (URL)
         An navigation indication.
     """
 
@@ -168,7 +168,7 @@ class SelectOption:
         The maximum length is 80 characters.
     value : `str`
         The value of the select option.
-    description: `str`, optional
+    description : `str`, optional
         An additional description of the select option, if present.
     default : `bool`
         Whether the select option is chosen by default or not.
@@ -182,6 +182,7 @@ class SelectOption:
     description: str | None = field(default=None)
     """An additional description of the select option, if present."""
 
+    # TODO: implement a partial emoji abc.
     # emoji: dict | PartialEmoji | None = field(default=None)
     # """The emoji related to the select option, if present."""
 
@@ -273,7 +274,7 @@ class TextInput(Component):
     min_length : `int`, optional
         The minimum allowed length for a text input in-between
         1-4000 characters. Defaults to `0`.
-    max_length: `int`, optional
+    max_length : `int`, optional
         The maximum allowed length for a text input in-between
         1-4000 characters. Defaults to `1`.
     required : `bool`, optional
