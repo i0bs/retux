@@ -18,6 +18,9 @@ class BotProtocol(Protocol):
     def start(self, token: str):
         ...
 
+    async def on(self, coro: Coroutine, name: NotNeeded[str] = MISSING) -> Callable[..., Any]:
+        ...
+
 
 class Bot(BotProtocol):
     """
