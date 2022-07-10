@@ -280,7 +280,7 @@ class GatewayClient(GatewayProtocol):
             json = loads(resp)
             return structure_attrs_fromdict(json, _GatewayPayload)
         except ConnectionClosed:
-            logger.fatal("The connection to Discord's Gateway has closed.")
+            logger.warn("The connection to Discord's Gateway has closed.")
             self._closed = True
             await self.connect()
 
@@ -301,7 +301,7 @@ class GatewayClient(GatewayProtocol):
             json = dumps(asdict(payload))
             resp = await self._conn.send_message(json)  # noqa
         except ConnectionClosed:
-            logger.fatal("The connection to Discord's Gateway has closed.")
+            logger.warn("The connection to Discord's Gateway has closed.")
             self._closed = True
             await self.connect()
 
