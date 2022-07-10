@@ -141,7 +141,7 @@ class Button(Component):
     """The type of component, as `ComponentType.BUTTON`."""
     style: int | ButtonStyle = field(converter=ButtonStyle)
     """The style of the button. Please see `Button` for usage."""
-    label: str | None = field(Default=None)
+    label: str | None = field(default=None)
     """The labelled contents of the button. The maximum length is 80 characters."""
 
     # TODO: implement a partial emoji abc.

@@ -194,7 +194,6 @@ class GatewayClient(GatewayProtocol):
 
     Attributes
     ----------
-
     token : `str`
         The bot's token.
     intents : `Intents`
@@ -207,6 +206,8 @@ class GatewayClient(GatewayProtocol):
         Whether the Gateway connection is closed or not.
     _last_ack : `list[float]`
         The before/after time of the last Gateway event tracked. See `latency` for Gateway connection timing.
+    _dispatched : `dict | None`
+        Represents the last item dispatched.
     """
 
     # TODO: Add sharding and presence changing.
@@ -227,6 +228,8 @@ class GatewayClient(GatewayProtocol):
     """Whether the Gateway connection is closed or not."""
     _last_ack: list[float]
     """The before/after time of the last Gateway event tracked. See `latency` for Gateway connection timing."""
+    _dispatched: object | None = None
+    """Represents the last item dispatched."""
 
     def __init__(
         self,
@@ -347,8 +350,10 @@ class GatewayClient(GatewayProtocol):
         match _GatewayOpCode(payload.opcode):
             case _GatewayOpCode.HELLO:
                 if not self._meta.session_id:
+                    logger.debug("New connection found, identifying to the Gateway.")
                     await self._identify()
                 elif self._meta.session_id:
+                    logger.debug("Prior connection found, trying to resume.")
                     await self._resume()
                 else:
                     self._meta.heartbeat_interval = payload.data["heartbeat_interval"] / 1000
@@ -368,19 +373,21 @@ class GatewayClient(GatewayProtocol):
                 # declarations.
 
                 self._last_ack[1] = perf_counter()
-                logger.debug(f"A heartbeat was acknowledged. Time took {self.latency}ms.")
+                logger.debug(f"The heartbeat was acknowledged. (took {self.latency}ms.)")
                 self._last_ack[0] = perf_counter()
             case _GatewayOpCode.INVALID_SESSION:
                 self._meta.session_id = None
                 await self.connect()
+                logger.info(
+                    "Our Gateway connection has suddenly invalidated. Starting new connection."
+                )
             case _GatewayOpCode.RECONNECT:
                 await self._resume()
+                logger.info("The Gateway has told us to reconnect. Resuming last known connection.")
             case _GatewayOpCode.DISPATCH:
+                await self._dispatch(payload.name, payload.data)
 
-                # TODO: implement a dispatch call.
-                # await self._dispatch(payload.name, payload.data)
-
-                logger.debug(f"Dispatching the given payload: {payload.name}")
+                logger.debug(f"Dispatching {payload.name}")
         match payload.name:
             case "RESUMED":
                 logger.debug(
@@ -392,6 +399,39 @@ class GatewayClient(GatewayProtocol):
                 logger.debug(
                     f"The Gateway has declared a ready connection. (session: {self._meta.session_id}, sequence: {self._meta.seq}"
                 )
+                logger.debug(f"Inner data package: {payload.data}")
+
+    async def _dispatch(self, name: str, data: dict):
+        """
+        Dispatches an event from the Gateway.
+
+        ---
+
+        "Dispatching" is when the Gateway sends the client
+        information regarding an event non-relevant to
+        the connection.
+
+        ---
+
+        Parameters
+        ----------
+        name : `str`
+            The name of the event.
+        data : `dict`
+            The supplied payload data from the event.
+        """
+        try:
+            clean_name = "".join([_.capitalize() for _ in name.split("_")[:-1]])
+            resource = getattr(__import__("retux.client.resources"), clean_name)
+        except AttributeError:
+            resource = MISSING
+            logger.info(f"The Gateway sent us {name} with no data class found.")
+
+        self._dispatched = {"name": name, "data": resource}
+
+        # TODO: implement the gateway rate limiting logic here.
+        # the theory of this is to "queue" dispatched informatoin
+        # from the Gateway when we enter a rate limit.
 
     async def _identify(self):
         """Sends an identification payload to the Gateway."""

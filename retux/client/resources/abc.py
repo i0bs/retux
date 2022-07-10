@@ -1,7 +1,6 @@
+from typing import Union
 from attrs import define, field
 from datetime import datetime
-
-from .components import ComponentType
 
 
 @define(repr=False, eq=False)
@@ -47,7 +46,7 @@ class Snowflake:
     def __repr__(self) -> str:
         return str(self._snowflake)
 
-    def __eq__(self, other: str | int | "Snowflake") -> bool:
+    def __eq__(self, other: Union[str, int, "Snowflake"]) -> bool:
         if type(other) == int:
             return bool(int(self._snowflake) == other)
         else:
@@ -95,14 +94,4 @@ class Component:
     `custom_id` is an attribute shared in every component,
     however, only `Button` makes them optional. A custom ID is
     a developer-defined ID in-between 1-100 characters.
-
-    ---
-
-    Attributes
-    ----------
-    type : `ComponentType`
-        The type of component.
     """
-
-    type: int | ComponentType = field(converter=ComponentType)
-    """The type of component."""
