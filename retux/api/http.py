@@ -99,21 +99,32 @@ class _Route:
         )
 
 
-@define()
+@define(slots=False)
 class _Limit:
-    """Represents a bucket that exists for a route."""
+    """
+    Represents a bucket that exists for a route.
+
+    Attributes
+    ----------
+    event : `trio.Event`
+        The asynchronous event associated to the bucket,
+        used for blocking conditions.
+    reset_after : `float`, optional
+        The time remaining before the event may be reset.
+        Defaults to `0.0`.
+    """
 
     event: Event = field(default=Event)
     """The asynchronous event associated to the bucket, used for blocking conditions."""
     reset_after: float = field(default=0.0)
-    """The time remaining before the event may be reset."""
+    """The time remaining before the event may be reset. Defaults to `0.0`."""
 
 
 class HTTPProtocol(Protocol):
     def __init__(self, token: str):
         ...
 
-    async def request(self, route: _Route, **kwargs):
+    async def request(self, route: _Route, payload: dict, retries: NotNeeded[int] = MISSING):
         ...
 
 
@@ -133,6 +144,8 @@ class HTTPClient(HTTPProtocol):
         The buckets currently stored.
     _rate_limits : `dict[str, _Limit]`
         The rate limits currently stored.
+    _global_rate_limit : `_Limit`
+        The global rate limit state.
     """
 
     __slots__ = ("token", "_headers")
@@ -169,25 +182,6 @@ class HTTPClient(HTTPProtocol):
         self._rate_limits = {}
 
     async def request(self, route: _Route, payload: dict, retries: NotNeeded[int] = MISSING):
-        # We're checking the bucket of this route to see if
-        # there's an existing rate limit. Rate limits can occur
-        # in one of two forms:
-        #
-        # - Route-based
-        #   This can apply to either the bucket, method or one
-        #   of the top-level identifiers. This code experiments
-        #   with dropping the method as, in theory,
-        #   the X-RateLimit-Bucket header will carry the same
-        #   information as what we're giving.
-        # - Global
-        #   This happens from the total amount of requests made
-        #   by the bot and takes priority call over a route's rate
-        #   limit.
-        #
-        # In either circumstance, the rate limit must be
-        # properly treated. Route rate limitations have to apply
-        # to their mapped trio.Event, otherwise we could easily
-        # hit constant rate limits.
 
         # TODO: Allow a reason field to be passed for audit log
         # purposes.
@@ -211,9 +205,6 @@ class HTTPClient(HTTPProtocol):
                 await rate_limit.event.wait(rate_limit.reset_after)
                 rate_limit.reset_after = 0.0
             elif rate_limit.reset_after == 0.0:
-                # Trio's philosophy believes that once an Event
-                # has been triggered, it must be discarded. We'll
-                # be rewriting the event information.
                 rate_limit.event = Event()
         else:
             self._rate_limits[bucket_path] = _Limit()
@@ -221,11 +212,6 @@ class HTTPClient(HTTPProtocol):
         retry_attempts = 3 if retries is MISSING else retries
         for attempt in range(retry_attempts):
             try:
-                # 3 is usually the standard of how many re-attempted
-                # calls should be made. However, the request is allowed
-                # to state their own retry count if needed. Some rate limits
-                # can be less harsh than others, proving to be beneficial
-                # in some form.
                 resp: Response
 
                 match route.method:
@@ -244,11 +230,6 @@ class HTTPClient(HTTPProtocol):
 
                 if isinstance(json, dict) and json.get("errors"):
                     raise HTTPException(json, severity=INFO)
-
-                # We want to check if the HTTP request we made has triggered
-                # a rate limit. We're also pre-emptively locking down buckets
-                # in the event that we're closed to hitting one as well.
-
                 if resp.status_code == 429:
                     reset_after = resp.headers.get("X-RateLimit-Reset-After", 0.0)
                     if bool(resp.headers.get("X-RateLimit-Global")):
@@ -271,14 +252,7 @@ class HTTPClient(HTTPProtocol):
 
                 return json
             except OSError as err:
-                # Sometimes, operating systems will randomly execute
-                # errors of their own when an HTTP request is made.
-                # In the event that this happens, we'll blanket down
-                # any calls for 5 seconds.
                 if attempt < 2 and err.errno in {54, 10054}:
                     await sleep_until(5)
             except Exception as err:
-                # We might receive other exceptions that we're not
-                # aware of. If so, we'll log them down and let the
-                # service to continue running.
                 logger.info(err)

@@ -1,11 +1,15 @@
 from attrs import define, field
 from datetime import datetime
 
+from .components import ComponentType
+
 
 @define(repr=False, eq=False)
 class Snowflake:
     """
     Represents an unique identifier for a Discord resource.
+
+    ---
 
     Discord utilizes Twitter's snowflake format for uniquely identifiable descriptors
     (IDs). These IDs are guaranteed to be unique across all of Discord, except in some
@@ -13,9 +17,28 @@ class Snowflake:
 
     ---
 
-    When a `Snowflake` is compared, its base representation will always be in string
-    format. If you want to treat the snowflake as an integer, you must manually convert
-    it.
+    Attributes
+    ----------
+    _snowflake : `str`, `int`
+        The snowflake itself. This should never need to be called upon directly.
+        Please use the representation of the class itself.
+
+    Methods
+    -------
+    timestamp : `datetime.datetime`
+        The timestamp of the snowflake as a UTC-native datetime.
+
+        Timestamps are denoted as milliseconds since the Discord Epoch:
+        the first second of 2015, or or `1420070400000`.
+    worker_id : `int`
+        The internal worker ID of the snowflake.
+    process_id : `int`
+        The internal process ID of the snowflake.
+    increment : `int`
+        The internal incrementation number of the snowflake.
+
+        This value will only increment when a process has been
+        generated on this snowflake, e.g. a resource.
     """
 
     _snowflake: str | int = field(converter=str)
@@ -25,7 +48,10 @@ class Snowflake:
         return str(self._snowflake)
 
     def __eq__(self, other: str | int | "Snowflake") -> bool:
-        return bool(self.__repr__() == str(other))
+        if type(other) == int:
+            return bool(int(self._snowflake) == other)
+        else:
+            return bool(self._snowflake == str(other))
 
     @property
     def timestamp(self) -> datetime:
@@ -39,17 +65,17 @@ class Snowflake:
         return datetime.utcfromtimestamp(retrieval)
 
     @property
-    def worker_id(self) -> int | float:
+    def worker_id(self) -> int:
         """The internal worker ID of the snowflake."""
         return (int(self._snowflake) & 0x3E0000) >> 17
 
     @property
-    def process_id(self) -> int | float:
+    def process_id(self) -> int:
         """The internal process ID of the snowflake."""
         return (int(self._snowflake) & 0x1F000) >> 12
 
     @property
-    def increment(self) -> int | float:
+    def increment(self) -> int:
         """
         The internal incrementation number of the snowflake.
 
@@ -57,3 +83,26 @@ class Snowflake:
         generated on this snowflake, e.g. a resource.
         """
         return int(self._snowflake) & 0xFFF
+
+
+@define()
+class Component:
+    """
+    Represents the base information of a component from Discord.
+
+    ---
+
+    `custom_id` is an attribute shared in every component,
+    however, only `Button` makes them optional. A custom ID is
+    a developer-defined ID in-between 1-100 characters.
+
+    ---
+
+    Attributes
+    ----------
+    type : `ComponentType`
+        The type of component.
+    """
+
+    type: int | ComponentType = field(converter=ComponentType)
+    """The type of component."""

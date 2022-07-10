@@ -1,4 +1,4 @@
-from enum import Enum
+from enum import IntEnum
 from json import dumps, loads
 from logging import getLogger
 from random import random
@@ -12,7 +12,7 @@ from trio import sleep_until
 from trio_websocket import ConnectionClosed, WebSocketConnection, open_websocket_url
 
 from ..client.flags import Intents
-from ..const import MISSING, __gateway_url__
+from ..const import MISSING, NotNeeded, __gateway_url__
 
 logger = getLogger("retux.api.gateway")
 
@@ -52,7 +52,7 @@ class _GatewayMeta:
     """The sequence number on an existent session."""
 
 
-class _GatewayOpCode(Enum):
+class _GatewayOpCode(IntEnum):
     """Represents a Gateway event's operation code."""
 
     DISPATCH = 0
@@ -149,7 +149,7 @@ class GatewayProtocol(Protocol):
         *,
         version: int = 10,
         encoding: str = "json",
-        compress: str = MISSING,
+        compress: NotNeeded[str] = MISSING,
     ):
         ...
 
@@ -171,7 +171,7 @@ class GatewayProtocol(Protocol):
     async def _resume(self):
         ...
 
-    async def _heartbeat(self, heartbeat_interval: float):
+    async def _heartbeat(self):
         ...
 
     @property
@@ -267,11 +267,6 @@ class GatewayClient(GatewayProtocol):
             A class of the payload data.
         """
 
-        # We're standardising every response from
-        # the WebSocket server to be in a payload class form.
-        # this allows an easier and more abstracted approach
-        # to handling it without an utter dict mess.
-
         # FIXME: our exception handling neglects other rejection
         # reasons. A more thorough analysis of trio_websocket
         # is necessary to have an extensible exception of our
@@ -295,11 +290,6 @@ class GatewayClient(GatewayProtocol):
         payload : `_GatewayPayload`
             The payload to send.
         """
-
-        # trio_websocket requires for us to send all data
-        # in the form of a string or set of bytes. In our case,
-        # it would be better to send a serialised JSON string
-        # so we run into no risks.
 
         # TODO: allow another compression types to interpret
         # in the form of bytes.
@@ -366,11 +356,6 @@ class GatewayClient(GatewayProtocol):
                     logger.debug("A heartbeat has been started.")
             case _GatewayOpCode.HEARTBEAT:
 
-                # trio_websocket allows us to treat a send_message()
-                # call as a blocking condition and waive it. In coordination
-                # with sleep_until for exact time execution, we're able to
-                # use this to our advantage for heartbeats.
-
                 # TODO: look into possible heartbeat duplication packet sending.
                 # This may be incorrect, as most closing codes have been "NORMAL_CLOSURE."
                 # Is this a possible FIXME as well?
@@ -408,12 +393,6 @@ class GatewayClient(GatewayProtocol):
                     f"The Gateway has declared a ready connection. (session: {self._meta.session_id}, sequence: {self._meta.seq}"
                 )
 
-    # TODO: Look into a better way to send data for payload structuring
-    # that doesn't necessarily mean a dict. This is perfectly fine, but,
-    # I like something a tiny bit more abstracted so that we could allow
-    # voice state and guild member request calls in the future in a nicer
-    # manner.
-
     async def _identify(self):
         """Sends an identification payload to the Gateway."""
         payload = _GatewayPayload(
@@ -443,16 +422,6 @@ class GatewayClient(GatewayProtocol):
     async def _heartbeat(self):
         """Sends a heartbeat payload to the Gateway."""
         payload = _GatewayPayload(op=_GatewayOpCode.HEARTBEAT.value, d=self._meta.seq)
-
-        # jitter is an argument supplied to the heartbeat_interval which
-        # the Gateway may additionally take to allow premature sending
-        # of heartbeats. While we're using trio.sleep_until() which
-        # calls on exact time, we may still want to delay by a fraction
-        # number in order to allow latency coverage on the client and
-        # not the host.
-        #
-        # We find this "necessary." :)
-
         jitter: float = random()
 
         await self._send(payload)

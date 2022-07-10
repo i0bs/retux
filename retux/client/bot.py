@@ -17,7 +17,18 @@ class BotProtocol(Protocol):
 
 
 class Bot(BotProtocol):
-    """Represents a bot's connection to Discord."""
+    """
+    Represents a bot's connection to Discord.
+
+    Attributes
+    ----------
+    intents : `Intents`
+        The bot's intents.
+    _gateway : `GatewayClient`
+        The bot's gateway connection.
+    _http : `HTTPClient`
+        The bot's HTTP connection.
+    """
 
     intents: Intents
     """The bot's intents."""

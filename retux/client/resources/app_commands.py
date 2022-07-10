@@ -1,7 +1,7 @@
 from enum import IntEnum
 from attrs import define, field
 
-from .misc import Snowflake
+from .abc import Snowflake
 
 
 @define(kw_only=True)
@@ -12,7 +12,7 @@ class ApplicationCommandOptionChoice:
     Attributes
     ----------
     name : `str`
-        The name of the application command option choice.
+        The name of the application command option choice in-between 1-100 characters.
     name_localizations : `dict[str, str]`, optional
         The localised dictionary of names for the application command option choices, if present.
     value : `str`, `int`, optional
@@ -20,7 +20,7 @@ class ApplicationCommandOptionChoice:
     """
 
     name: str = field()
-    """The name of the application command option choice."""
+    """The name of the application command option choice in-between 1-100 characters."""
     name_localizations: dict[str, str] | None = field(converter=dict, default=None)
     """The localised dictionary of names for the application command option choices, if present."""
     value: str | int = field()
@@ -74,7 +74,7 @@ class ApplicationCommandOption:
     required : `bool`, optional
         Whether the application command option is required to be entered or not.
     choices : `list[ApplicationCommandOptionChoice]`, optional
-        Pre-filled selection choices of an application command option.
+        Pre-filled choices of an application command option, if present.
 
         The choices must be from a `STRING`, `INTEGER` or `NUMBER` type.
         An application command option can have a maximum of 25 choices.
@@ -130,7 +130,7 @@ class ApplicationCommandOption:
     `SUB_COMMAND_GROUP`.
     """
 
-    # TODO: implement a channel type enumerable.
+    # TODO: implement a channel type integer enumerable.
     # channel_types: list[ChannelType] | None = field(converter=list, default=None)
     # """The types of channels the option will filter to, if present."""
 
@@ -139,9 +139,9 @@ class ApplicationCommandOption:
     max_value: int | None = field(default=None)
     """The maximum value permitted for the application command option."""
     min_length: int | None = field(default=None)
-    """The minimum length permitted for the application command option."""
+    """The minimum length permitted for the application command option. The minimum allowed is `0`."""
     max_length: int | None = field(default=None)
-    """The maximum length permitted for the application command option."""
+    """The maximum length permitted for the application command option. The maximum allowed is `1`."""
     autocomplete: bool | None = field(default=None)
     """
     Whether the application command option is autocompleted or not.
@@ -187,7 +187,8 @@ class ApplicationCommand:
         The localised dictionary of descriptions for the application command, if present.
     options : `list[ApplicationCommandOption]`, optional
         The options of the application command, if present.
-        Options are only present on `CHAT_INPUT` command types.
+        A maximum of 25 options are allowed. Options are only
+        present on `CHAT_INPUT` command types.
     default_member_permissions : `str`, optional
         The default permissions of the application command, if present.
     dm_permission : `bool`, optional
@@ -220,7 +221,8 @@ class ApplicationCommand:
     )
     """
     The options of the application command, if present.
-    Options are only present on `CHAT_INPUT` command types.
+    A maximum of 25 options are allowed. Options are only
+    present on `CHAT_INPUT` command types.
     """
     default_member_permissions: str | None = field(default=None)
     """The default permissions of the application command, if present."""
