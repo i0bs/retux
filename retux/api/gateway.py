@@ -10,6 +10,8 @@ from cattrs import structure_attrs_fromdict
 from trio import sleep_until, open_nursery
 from trio_websocket import ConnectionClosed, WebSocketConnection, open_websocket_url
 
+from ..client.resources.abc import Snowflake
+
 from ..client.flags import Intents
 from ..const import MISSING, NotNeeded, __gateway_url__
 
@@ -64,7 +66,7 @@ class _GatewayOpCode(IntEnum):
     """An event received to acknowledge a `HEARTBEAT` sent."""
 
 
-@define()
+@define(slots=False)
 class _GatewayPayload:
     """
     Represents a Gateway payload, signifying data for events.
@@ -128,6 +130,27 @@ class GatewayProtocol(Protocol):
     async def reconnect(self):
         ...
 
+    async def request_guild_members(
+        self,
+        guild_id: Snowflake,
+        *,
+        query: NotNeeded[str] = MISSING,
+        limit: NotNeeded[int] = MISSING,
+        presences: NotNeeded[bool] = MISSING,
+        user_ids: NotNeeded[Snowflake | list[Snowflake]] = MISSING,
+        nonce: NotNeeded[str] = MISSING,
+    ):
+        ...
+
+    async def update_voice_state(
+        self,
+        guild_id: Snowflake,
+        channel_id: NotNeeded[Snowflake] = MISSING,
+        self_mute: NotNeeded[bool] = MISSING,
+        self_deaf: NotNeeded[bool] = MISSING,
+    ):
+        ...
+
     @property
     def latency(self) -> float:
         ...
@@ -160,14 +183,11 @@ class GatewayClient(GatewayProtocol):
         Whether the Gateway connection is closed or not.
     _last_ack : `list[float]`
         The before/after time of the last Gateway event tracked. See `latency` for Gateway connection timing.
-    _dispatched : `dict | None`
+    _dispatched : `dict`
         Represents the last item dispatched.
     """
 
     # TODO: Add sharding and presence changing.
-    # TODO: Add dispatcher regulation standard.
-    # TODO: Add voice state changing
-    # TODO: Add request member ability.
 
     __slots__ = ("token", "intents", "_conn", "_meta", "_last_ack")
     token: str
@@ -426,6 +446,99 @@ class GatewayClient(GatewayProtocol):
         while not self._closed:
             await self._send(payload)
             await sleep_until(self._meta.heartbeat_interval)
+
+    async def request_guild_members(
+        self,
+        guild_id: Snowflake,
+        *,
+        query: NotNeeded[str] = MISSING,
+        limit: NotNeeded[int] = MISSING,
+        presences: NotNeeded[bool] = MISSING,
+        user_ids: NotNeeded[Snowflake | list[Snowflake]] = MISSING,
+        nonce: NotNeeded[str] = MISSING,
+    ):
+        """
+        Sends a request for all guild members to the Gateway.
+
+        Parameters
+        ----------
+        guild_id : `Snowflake`
+            The ID of the guild to request from.
+        query : `str`, optional
+            The name of the guild member(s). If you're looking to
+            receive all members of a guild, this is left untouched.
+        limit : `int`, optional
+            How many guild members you wish to return. When `query`
+            is specified, only a maximum of `100` are returned.
+            This should be left untouched with `query` for all
+            members of a guild.
+        presences : `bool`, optional
+            Whether you only want to receive guild members with
+            a presence. The `GUILD_PRESENCES` intent must be
+            enabled in order to use.
+        user_ids : `Snowflake` or `list[Snowflake]`, optional
+            The IDs of members in the guild to return. This
+            may be used in conjunction to `query`, and poses the
+            same maximum as `limit` regardless of declaration.
+        nonce : `str`, optional
+            A nonce used for identification when receiving a
+            Guild Members Chunk event.
+        """
+        payload = _GatewayPayload(
+            op=_GatewayOpCode.REQUEST_GUILD_MEMBERS,
+            d={
+                "guild_id": guild_id,
+                "query": "" if query is MISSING else query,
+                "limit": 0 if limit is MISSING else limit,
+            },
+        )
+
+        if presences is not MISSING:
+            payload.data["presences"] = presences
+        if user_ids is not MISSING:
+            payload.data["user_ids"] = user_ids
+        if nonce is not MISSING:
+            payload.data["nonce"] = nonce
+
+        logger.debug("Sending a payload requesting for guild members to the Gateway.")
+        await self._send(payload)
+
+    async def update_voice_state(
+        self,
+        guild_id: Snowflake,
+        channel_id: NotNeeded[Snowflake] = MISSING,
+        self_mute: NotNeeded[bool] = MISSING,
+        self_deaf: NotNeeded[bool] = MISSING,
+    ):
+        """
+        Sends a request updating the bot's voice state to the Gateway.
+
+        Parameters
+        ----------
+        guild_id : `Snowflake`
+            The ID of the guild to request from.
+        channel_id : `Snowflake`, optional
+            The channel ID of the guild to update in.
+            If the bot is trying to disconnect, this should
+            be left untouched.
+        self_mute : `bool`, optional
+            Whether the bot is muting itself or not.
+            Defaults to `False`.
+        self_deaf : `bool`, optional
+            Whether the bot is deafening itself or not.
+            Defaults to `False`.
+        """
+        payload = _GatewayPayload(
+            op=_GatewayOpCode.VOICE_STATE_UPDATE,
+            d={
+                "guild_id": guild_id,
+                "channel_id": None if channel_id is MISSING else channel_id,
+                "self_mute": False if self_mute is MISSING else self_mute,
+                "self_deaf": False if self_deaf is MISSING else self_deaf,
+            },
+        )
+        logger.debug("Sending a payload requesting a voice state update to the Gateway.")
+        await self._send(payload)
 
     @property
     def latency(self) -> float:

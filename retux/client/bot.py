@@ -93,16 +93,16 @@ class Bot(BotProtocol):
             The token of the bot.
         """
         async with GatewayClient(token, self.intents) as self._gateway:
-            await self._listen()
+            while not self._gateway._closed:
+                await self._listen()
 
     async def _listen(self):
         """Listens to the Gateway for an event that's been dispatched."""
-        while not self._gateway._closed:
-            if self._gateway._dispatched is not None:
-                await self._trigger(
-                    self._gateway._dispatched["name"], self._gateway._dispatched["data"]
-                )
-                self._gateway._dispatched = None
+        if self._gateway._dispatched is not None:
+            await self._trigger(
+                self._gateway._dispatched["name"], self._gateway._dispatched["data"]
+            )
+            self._gateway._dispatched = None
 
     def _register(self, coro: Coroutine, name: Optional[str] = None, event: Optional[bool] = True):
         """
