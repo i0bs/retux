@@ -129,7 +129,7 @@ class GatewayProtocol(Protocol):
         ...
 
     @property
-    def latency(self):
+    def latency(self) -> float:
         ...
 
 

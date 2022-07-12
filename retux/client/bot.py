@@ -18,7 +18,18 @@ class BotProtocol(Protocol):
     def start(self, token: str):
         ...
 
+    async def restart(self):
+        ...
+
     async def on(self, coro: Coroutine, name: NotNeeded[str] = MISSING) -> Callable[..., Any]:
+        ...
+
+    @property
+    def latency(self) -> float:
+        ...
+
+    @property
+    def is_offline(self) -> bool:
         ...
 
 
@@ -56,15 +67,78 @@ class Bot(BotProtocol):
         self._gateway = MISSING
         self.http = MISSING
 
-    async def start(self, token: str):
-        """Starts a connection with Discord."""
-        self._gateway = GatewayClient(token, intents=self.intents)
+    def start(self, token: str):
+        """
+        Starts a connection with Discord.
+
+        Parameters
+        ----------
+        token : `str`
+            The token of the bot.
+        """
         self.http = HTTPClient(token)
+        run(self._connect, token)
 
-        await self._gateway.__aenter__()
-        await self._listen()
+    async def restart(self):
+        """Restarts a connection with Discord."""
+        await self._gateway.reconnect()
 
-    async def on(self, coro: Coroutine, name: NotNeeded[str] = MISSING) -> Callable[..., Any]:
+    async def _connect(self, token: str):
+        """
+        Connects to the Gateway and hooks into the manager.
+
+        Parameters
+        ----------
+        token : `str`
+            The token of the bot.
+        """
+        async with GatewayClient(token, self.intents) as self._gateway:
+            await self._listen()
+
+    async def _listen(self):
+        """Listens to the Gateway for an event that's been dispatched."""
+        while not self._gateway._closed:
+            if self._gateway._dispatched is not None:
+                await self._trigger(
+                    self._gateway._dispatched["name"], self._gateway._dispatched["data"]
+                )
+                self._gateway._dispatched = None
+
+    def _register(self, coro: Coroutine, name: Optional[str] = None, event: Optional[bool] = True):
+        """
+        Registers a coroutine to be used as a callback.
+
+        Parameters
+        ----------
+        coro : `typing.Coroutine`
+            The coroutine associated with the event.
+        name : `str`, optional
+            The name associated with the event. Defaults to
+            the name of the coroutine, prefixed with `on_`.
+        event : `bool`, optional
+            Whether the coroutine is a Gateway event or not.
+            Defaults to `True`.
+        """
+        _name = (f"on_{name}" if event else name) if name else coro.__name__
+
+        call = self._calls.get(_name, [])
+        call.append(coro)
+
+        self._calls[_name] = call
+
+    async def _trigger(self, name: str, *args):
+        """
+        Triggers a coroutine registered for callbacks.
+
+        Parameters
+        ----------
+        name : `str`
+            The name associated with the coroutine.
+        """
+        for event in self._calls.get(name, []):
+            await run(event, *args)
+
+    def on(self, coro: Coroutine, name: NotNeeded[str] = MISSING) -> Callable[..., Any]:
         """
         Listens to events given from the Gateway.
 
@@ -89,7 +163,7 @@ class Bot(BotProtocol):
         async def on_guild_create(guild: retux.Guild):
             print(guild.member_count)
 
-        @bot.on("on_message_create")
+        @bot.on("message_create")
         async def message_events(message: retux.Message):
             print(message.content)
         ```
@@ -117,48 +191,18 @@ class Bot(BotProtocol):
 
         return decor
 
-    async def _listen(self):
-        """Listens to the Gateway for an event that's been dispatched."""
-        while not self._gateway._closed:
-            if self._gateway._dispatched is not None:
-                print("we saw")
-                await self._trigger(self._gateway._dispatched["name"])
-                self._gateway._dispatched = None
-            else:
-                print("spam")
-
-    async def _register(
-        self, coro: Coroutine, name: Optional[str] = None, event: Optional[bool] = True
-    ):
+    @property
+    def latency(self) -> float:
         """
-        Registers a coroutine to be used as a callback.
-
-        Parameters
-        ----------
-        coro : `typing.Coroutine`
-            The coroutine associated with the event.
-        name : `str`, optional
-            The name associated with the event. Defaults to
-            the name of the coroutine, prefixed with `on_`.
-        event : `bool`, optional
-            Whether the coroutine is a Gateway event or not.
-            Defaults to `True`.
+        The bot's latency from the Gateway.
+        This is only calculated from heartbeats.
         """
-        _name = (f"on_{name}" if event else name) if name else coro.__name__
+        return self._gateway.latency
 
-        call = self._calls.get(_name, [])
-        call.append(coro)
-
-        self._calls[_name] = call
-
-    async def _trigger(self, name: str, *args):
+    @property
+    def is_offline(self) -> bool:
         """
-        Triggers a coroutine registered via. `@on`.
-
-        Parameters
-        ----------
-        name : `str`
-            The name associated with the event.
+        Whether the bot is offline or not.
+        May be useful for determining when to restart!
         """
-        for event in self._calls.get(name, []):
-            await run(event, *args)
+        return bool(self._gateway._closed)
