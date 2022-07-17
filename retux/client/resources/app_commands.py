@@ -1,4 +1,5 @@
 from enum import IntEnum
+
 from attrs import define, field
 
 from .abc import Snowflake
@@ -108,11 +109,15 @@ class ApplicationCommandOption:
     """The localised dictionary of names for the application command option, if present."""
     description: str = field()
     """The description of the option in-between 1-100 characters."""
-    description_localizations: dict[str, str] | None = field(converter=dict, default=None)
+    description_localizations: dict[str, str] | None = field(
+        converter=dict, default=None
+    )
     """The localised dictionary of descriptions for the application command option, if present."""
     required: bool | None = field(default=None)
     """Whether the application command option is required to be entered or not."""
-    choices: list[ApplicationCommandOptionChoice] | None = field(converter=list, default=None)
+    choices: list[ApplicationCommandOptionChoice] | None = field(
+        converter=list, default=None
+    )
     """
     Pre-filled selection choices of an application command option.
 
@@ -214,7 +219,9 @@ class ApplicationCommand:
     The description of the command in-between 1-100 characters.
     Descriptions are only present on `CHAT_INPUT` command types.
     """
-    description_localizations: dict[str, str] | None = field(converter=dict, default=None)
+    description_localizations: dict[str, str] | None = field(
+        converter=dict, default=None
+    )
     """The localised dictionary of descriptions for the application command, if present."""
     options: list[dict] | list[ApplicationCommandOption] | None = field(
         converter=list, default=None

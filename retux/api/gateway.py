@@ -7,12 +7,11 @@ from typing import Any, Protocol
 
 from attrs import asdict, define, field
 from cattrs import structure_attrs_fromdict
-from trio import sleep_until, open_nursery
+from trio import open_nursery, sleep_until
 from trio_websocket import ConnectionClosed, WebSocketConnection, open_websocket_url
 
-from ..client.resources.abc import Snowflake
-
 from ..client.flags import Intents
+from ..client.resources.abc import Snowflake
 from ..const import MISSING, NotNeeded, __gateway_url__
 
 logger = getLogger(__name__)

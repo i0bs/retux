@@ -1,3 +1,4 @@
+from logging import getLogger
 from typing import Any, Callable, Coroutine, Optional, Protocol
 
 from trio import run
@@ -6,7 +7,6 @@ from ..api import GatewayClient
 from ..api.http import HTTPClient
 from ..const import MISSING, NotNeeded
 from .flags import Intents
-from logging import getLogger
 
 logger = getLogger(__name__)
 
@@ -21,7 +21,9 @@ class BotProtocol(Protocol):
     async def restart(self):
         ...
 
-    async def on(self, coro: Coroutine, name: NotNeeded[str] = MISSING) -> Callable[..., Any]:
+    async def on(
+        self, coro: Coroutine, name: NotNeeded[str] = MISSING
+    ) -> Callable[..., Any]:
         ...
 
     @property
@@ -104,7 +106,9 @@ class Bot(BotProtocol):
             )
             self._gateway._dispatched = None
 
-    def _register(self, coro: Coroutine, name: Optional[str] = None, event: Optional[bool] = True):
+    def _register(
+        self, coro: Coroutine, name: Optional[str] = None, event: Optional[bool] = True
+    ):
         """
         Registers a coroutine to be used as a callback.
 
