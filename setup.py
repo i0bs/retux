@@ -9,7 +9,7 @@ def read(fp):
 PROJECT_NAME = "retux"
 PROJECT_DESC = "A Discord API wrapper built with good intentions."
 README = read("README.md")
-REQUIREMENTS = read("requirements.txt").strip().splitlines()
+REQUIREMENTS = ["attrs", "cattrs", "httpx", "trio", "trio_websocket"]
 VERSION = "0.0.1"
 AUTHOR_NAME = "i0"
 AUTHOR_EMAIL = "me@i0.gg"

@@ -1,5 +1,0 @@
-attrs
-cattrs
-httpx
-trio
-trio_websocket
