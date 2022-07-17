@@ -1,9 +1,5 @@
 # retux
 
-A Discord API wrapper built with good intentions.
-
-## Introduction
-
 The Discord bot ecosystem is dominated by libraries that offer
 abstraction to the point where a bot developer no longer has
 to have any considerable programming knowledge prior to developing
@@ -14,6 +10,8 @@ noise and confusion to writing code.
 retux takes an approach towards allowing the developer to write
 client-facing code that works instead of being stuck on a
 library-specific error every 15 minutes.
+
+**A Discord API wrapper built with good intentions.**
 
 ## What does it offer?
 

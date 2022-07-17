@@ -340,9 +340,7 @@ class GatewayClient(GatewayProtocol):
                 else:
                     logger.debug("New connection found, identifying to the Gateway.")
                     await self._identify()
-                    self._meta.heartbeat_interval = (
-                        payload.data["heartbeat_interval"] / 1000
-                    )
+                    self._meta.heartbeat_interval = payload.data["heartbeat_interval"] / 1000
             case _GatewayOpCode.HEARTBEAT_ACK:
 
                 # FIXME: this may produce inaccurate results if multiple
@@ -350,9 +348,7 @@ class GatewayClient(GatewayProtocol):
                 # declarations.
 
                 self._last_ack[1] = perf_counter()
-                logger.debug(
-                    f"The heartbeat was acknowledged. (took {self.latency}ms.)"
-                )
+                logger.debug(f"The heartbeat was acknowledged. (took {self.latency}ms.)")
                 self._last_ack[0] = perf_counter()
             case _GatewayOpCode.INVALID_SESSION:
                 logger.info(
@@ -541,9 +537,7 @@ class GatewayClient(GatewayProtocol):
                 "self_deaf": False if self_deaf is MISSING else self_deaf,
             },
         )
-        logger.debug(
-            "Sending a payload requesting a voice state update to the Gateway."
-        )
+        logger.debug("Sending a payload requesting a voice state update to the Gateway.")
         await self._send(payload)
 
     @property
