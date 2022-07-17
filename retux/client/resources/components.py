@@ -1,5 +1,6 @@
-from attrs import define, field
 from enum import IntEnum
+
+from attrs import define, field
 
 from .abc import Component
 
@@ -51,7 +52,9 @@ class ActionRow(Component):
         The components stored under the action row.
     """
 
-    type: int | ComponentType = field(converter=ComponentType, default=ComponentType.ACTION_ROW)
+    type: int | ComponentType = field(
+        converter=ComponentType, default=ComponentType.ACTION_ROW
+    )
     """The type of component, as `ComponentType.ACTION_ROW`."""
     components: list[Component] = field(converter=list, default=None)
     """The components stored in the action row."""
@@ -137,7 +140,9 @@ class Button(Component):
         Whether the button is disabled for usage or not. Defaults to `False`.
     """
 
-    type: int | ComponentType = field(converter=ComponentType, default=ComponentType.BUTTON)
+    type: int | ComponentType = field(
+        converter=ComponentType, default=ComponentType.BUTTON
+    )
     """The type of component, as `ComponentType.BUTTON`."""
     style: int | ButtonStyle = field(converter=ButtonStyle)
     """The style of the button. Please see `Button` for usage."""
@@ -216,7 +221,9 @@ class SelectMenu(Component):
         to `False`.
     """
 
-    type: int | ComponentType = field(converter=ComponentType, default=ComponentType.SELECT_MENU)
+    type: int | ComponentType = field(
+        converter=ComponentType, default=ComponentType.SELECT_MENU
+    )
     """The type of component, as `ComponentType.SELECT_MENU`."""
     custom_id: str = field()
     """A customisable identifiable descriptor for the select menu."""
@@ -287,7 +294,9 @@ class TextInput(Component):
         The maximum length is 100 characters.
     """
 
-    type: int | ComponentType = field(converter=ComponentType, default=ComponentType.TEXT_INPUT)
+    type: int | ComponentType = field(
+        converter=ComponentType, default=ComponentType.TEXT_INPUT
+    )
     """The type of component, as `ComponentType.TEXT_INPUT`."""
     custom_id: str = field()
     """A customisable identifiable descriptor for the text input."""

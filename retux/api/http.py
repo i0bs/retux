@@ -100,7 +100,9 @@ class HTTPProtocol(Protocol):
     def __init__(self, token: str):
         ...
 
-    async def request(self, route: _Route, payload: dict, retries: NotNeeded[int] = MISSING):
+    async def request(
+        self, route: _Route, payload: dict, retries: NotNeeded[int] = MISSING
+    ):
         ...
 
 
@@ -157,16 +159,23 @@ class HTTPClient(HTTPProtocol):
         self._buckets = {}
         self._rate_limits = {}
 
-    async def request(self, route: _Route, payload: dict, retries: NotNeeded[int] = MISSING):
+    async def request(
+        self, route: _Route, payload: dict, retries: NotNeeded[int] = MISSING
+    ):
 
         # TODO: Allow a reason field to be passed for audit log
         # purposes.
 
-        if self._global_rate_limit.event.is_set() and self._global_rate_limit.reset_after != 0:
+        if (
+            self._global_rate_limit.event.is_set()
+            and self._global_rate_limit.reset_after != 0
+        ):
             logger.warning(
                 f"There is still a global rate limit ongoing. Trying again in {self._global_rate_limit.reset_after}s."
             )
-            await self._global_rate_limit.event.wait(self._global_rate_limit.reset_after)
+            await self._global_rate_limit.event.wait(
+                self._global_rate_limit.reset_after
+            )
             self._global_rate_limit.reset_after = 0.0
         elif self._global_rate_limit.reset_after == 0.0:
             self._global_rate_limit.event = Event()

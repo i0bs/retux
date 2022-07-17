@@ -1,6 +1,7 @@
-from typing import Union
-from attrs import define, field
 from datetime import datetime
+from typing import Union
+
+from attrs import define, field
 
 
 @define(repr=False, eq=False)
