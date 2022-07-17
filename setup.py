@@ -1,16 +1,22 @@
+from re import search
 from os import path
 from setuptools import find_packages, setup
+
+PROJECT_NAME = "retux"
+PROJECT_DESC = "A Discord API wrapper built with good intentions."
 
 
 def read(fp):
     return open(path.join(path.dirname(__file__), fp)).read()
 
 
-PROJECT_NAME = "retux"
-PROJECT_DESC = "A Discord API wrapper built with good intentions."
+with open(
+    path.join(path.abspath(path.dirname(__file__)), PROJECT_NAME, "base.py"), encoding="utf-8"
+) as fp:
+    VERSION = search('__version__ = "([^"]+)"', fp.read())[1]
+
 README = read("README.md")
-REQUIREMENTS = ["attrs", "cattrs", "httpx", "trio", "trio_websocket"]
-VERSION = "0.0.1"
+REQUIREMENTS = open("requirements.txt", "r").read().strip().splitlines()
 AUTHOR_NAME = "i0"
 AUTHOR_EMAIL = "me@i0.gg"
 
@@ -18,6 +24,7 @@ setup(
     name=PROJECT_NAME,
     description=PROJECT_DESC,
     long_description=README,
+    long_description_content_type="text/markdown",
     version=VERSION,
     author=AUTHOR_NAME,
     author_email=AUTHOR_EMAIL,
