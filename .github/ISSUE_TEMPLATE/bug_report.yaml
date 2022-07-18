@@ -24,5 +24,7 @@ body:
     attributes:
       label: Code of Conduct
       description: By checking, you accept that you will follow our contribution standards.
+      options:
+        - label: I agree.
     validations:
       required: true
