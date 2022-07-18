@@ -30,7 +30,7 @@ setup(
     keywords="python discord discord-bot discord-api python3 discord-bots",
     packages=find_packages(),
     include_package_data=True,
-    install_requires=REQUIREMENTS,
+    install_requires=["attrs", "cattrs", "httpx", "trio", "trio_websocket"],
     python_requires=">=3.10.0",
     classifiers=[
         "Intended Audience :: Developers",
