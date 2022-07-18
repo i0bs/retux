@@ -1,4 +1,3 @@
-from re import search
 from os import path
 from setuptools import find_packages, setup
 
@@ -10,11 +9,7 @@ def read(fp):
     return open(path.join(path.dirname(__file__), fp)).read()
 
 
-with open(
-    path.join(path.abspath(path.dirname(__file__)), PROJECT_NAME, "base.py"), encoding="utf-8"
-) as fp:
-    VERSION = search('__version__ = "([^"]+)"', fp.read())[1]
-
+VERSION = "0.0.2"
 README = read("README.md")
 REQUIREMENTS = open("requirements.txt", "r").read().strip().splitlines()
 AUTHOR_NAME = "i0"
