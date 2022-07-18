@@ -92,7 +92,7 @@ class Application:
     """The hash for the default rich presence invite cover."""
     flags: int | ApplicationFlags = field(default=None, converter=ApplicationFlags)
     """The public flags of the application."""
-    tags: list[str] = field(default=None)
+    tags: list[str] | None = field(converter=list, default=None)
     """A maximum of 5 tags describing the content and functionality of the application."""
     install_params: dict | InstallParams = field(default=None, converter=InstallParams)
     """The settings for the application's default in-app authorization link."""
