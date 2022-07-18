@@ -68,17 +68,17 @@ class Application:
     """The hash for the application's icon."""
     description: str = field()
     """The hash for the application's icon."""
-    rpc_origins: list[str] = field(default=None)
+    rpc_origins: list[str] | None = field(converter=list, default=None)
     """A list of rpc origin urls, if rpc is enabled."""
     bot_public: bool = field()
     """False if only application owner can join the application's bot to guilds."""
     bot_require_code_grant: bool = field()
     """True if the application's bot has the oauth2 code grant flow enabled."""
-    terms_of_service_url: str = field(default=None)
+    terms_of_service_url: str | None = field(default=None)
     """The url for the application's terms of service."""
-    privacy_policy_url: str = field(default=None)
+    privacy_policy_url: str | None = field(default=None)
     """The url for the application's privacy policy."""
-    owner: dict | User = field(default=None, converter=User)
+    owner: dict | User | None = field(default=None, converter=User)
     """A partial user object representing the application owner."""
     summary: str = field()
     """**Deprecated**. This is an empty string that will be removed in v11. Defaults to `""`"""
@@ -86,20 +86,20 @@ class Application:
     """The hex encoded key for verification in interactions and the gamesdk's getticket"""
     team: dict | Team = field(converter=Team)
     """A team object representing the team that the application belongs to."""
-    guild_id: str | Snowflake = field(default=None, converter=Snowflake)
+    guild_id: str | Snowflake | None = field(default=None, converter=Snowflake)
     """The ID of the guild if the application is a sold game."""
-    primary_sku_id: str | Snowflake = field(default=None, converter=Snowflake)
+    primary_sku_id: str | Snowflake | None = field(default=None, converter=Snowflake)
     """The ID of the "game sku" if it exists and the application is a game sold on Discord."""
-    slug: str = field(default=None)
+    slug: str | None = field(default=None)
     """IThe url slug that links to the application's store page if it is a game sold on Discord."""
-    cover_image: str = field(default=None)
+    cover_image: str | None = field(default=None)
     """
     The hash for the default rich presence invite cover.
         
     This hash is pre-determined by the API and does not reflect
     the URL path.
     """
-    flags: int | ApplicationFlags = field(default=None, converter=ApplicationFlags)
+    flags: int | ApplicationFlags | None = field(default=None, converter=ApplicationFlags)
     """The public flags of the application."""
     tags: list[str] | None = field(converter=list, default=None)
     """A maximum of 5 tags describing the content and functionality of the application."""
