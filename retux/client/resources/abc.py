@@ -3,6 +3,16 @@ from typing import Union
 
 from attrs import define, field
 
+from ...const import MISSING
+
+
+@define(slots=False)
+class Event:
+    """An abstract base class for representing Gateway events."""
+
+    name: str = field()
+    bot: "Bot" | MISSING = field(default=MISSING)  # noqa
+
 
 @define(repr=False, eq=False)
 class Snowflake:

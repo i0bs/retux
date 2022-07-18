@@ -10,6 +10,8 @@ from cattrs import structure_attrs_fromdict
 from trio import open_nursery, sleep, Nursery
 from trio_websocket import ConnectionClosed, WebSocketConnection, open_websocket_url
 
+from .factories.factory import Factory
+
 from ..client.flags import Intents
 from ..client.resources.abc import Snowflake
 from ..const import MISSING, NotNeeded, __gateway_url__
@@ -426,8 +428,7 @@ class GatewayClient(GatewayProtocol):
             The supplied payload data from the event.
         """
         try:
-            clean_name = "".join([_.capitalize() for _ in name.split("_")[:-1]])
-            resource = getattr(__import__("retux.client.resources"), clean_name)
+            resource = Factory.define(name, data)
         except AttributeError:
             resource = MISSING
             logger.info(f"The Gateway sent us {name} with no data class found.")
