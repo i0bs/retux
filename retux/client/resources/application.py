@@ -94,7 +94,7 @@ class Application:
     """The public flags of the application."""
     tags: list[str] | None = field(converter=list, default=None)
     """A maximum of 5 tags describing the content and functionality of the application."""
-    install_params: dict | InstallParams = field(default=None, converter=InstallParams)
+    install_params: dict | InstallParams | None = field(default=None, converter=InstallParams)
     """The settings for the application's default in-app authorization link."""
     custom_install_url: str | None = field(default=None)
     """The application's default custom authorization link."""
