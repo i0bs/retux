@@ -1,0 +1,30 @@
+name: Request a feature.
+description: Need something that the library doesn't offer? Suggest it to us!
+title: "request: "
+labels: ["not a bug", "api", "client"]
+assignees:
+  - i0bs
+body:
+  - type: textarea
+    id: feature
+    attributes:
+      label: What's the feature?
+      description: Please provide a brief explanation of what the feature is.
+    validations:
+      required: true
+  - type: textarea
+    id: functionality
+    attributes:
+      label: How does it work?
+      description: If possible, provide an example of how it would look.
+    validations:
+      required: false
+  - type: checkboxes
+    id: code-of-conduct
+    attributes:
+      label: Code of Conduct
+      description: By checking, you accept that you will follow our contribution standards.
+      options:
+        - label: I agree.
+    validations:
+      required: true
