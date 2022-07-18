@@ -7,7 +7,7 @@ from typing import Any, Protocol
 
 from attrs import asdict, define, field
 from cattrs import structure_attrs_fromdict
-from trio import open_nursery, sleep
+from trio import open_nursery, sleep, Nursery
 from trio_websocket import ConnectionClosed, WebSocketConnection, open_websocket_url
 
 from ..client.flags import Intents
@@ -174,35 +174,39 @@ class GatewayClient(GatewayProtocol):
         An instance of a connection to the Gateway.
     _meta : `_GatewayMeta`
         Metadata representing connection parameters for the Gateway.
+    _tasks : `trio.Nursery`
+        The tasks associated with the Gateway, for reconnection and heartbeating.
     _closed : `bool`
         Whether the Gateway connection is closed or not.
     _heartbeat_ack : `bool`
         Whether we've received the first heartbeat acknowledgement or not.
     _last_ack : `list[float]`
         The before/after time of the last Gateway event tracked. See `latency` for Gateway connection timing.
-    _dispatched : `dict`
-        Represents the last item dispatched.
+    _bots : `list[retux.Bot]`
+        The bot instances used for dispatching events.
     """
 
     # TODO: Add sharding and presence changing.
 
-    __slots__ = ("token", "intents", "_conn", "_meta", "_last_ack")
+    __slots__ = ("token", "intents", "_meta")
     token: str
     """The bot's token."""
     intents: Intents
     """The intents to connect with."""
-    _conn: WebSocketConnection
+    _conn: WebSocketConnection = None
     """An instance of a connection to the Gateway."""
     _meta: _GatewayMeta
     """Metadata representing connection parameters for the Gateway."""
+    _tasks: Nursery = None
+    """The tasks associated with the Gateway, for reconnection and heartbeating."""
     _closed: bool = True
     """Whether the Gateway connection is closed or not."""
     _heartbeat_ack: bool = False
     """Whether we've received the first heartbeat acknowledgement or not."""
-    _last_ack: list[float]
+    _last_ack: list[float] = []
     """The before/after time of the last Gateway event tracked. See `latency` for Gateway connection timing."""
-    _dispatched: object | None = None
-    """Represents the last item dispatched."""
+    _bots: list["Bot"] = []  # noqa
+    """The bot instances used for dispatching events."""
 
     def __init__(
         self,
@@ -232,7 +236,6 @@ class GatewayClient(GatewayProtocol):
         self.token = token
         self.intents = intents
         self._meta = _GatewayMeta(version=version, encoding=encoding, compress=compress)
-        self._tasks = None
 
     async def __aenter__(self):
         self._tasks = open_nursery()
@@ -380,6 +383,29 @@ class GatewayClient(GatewayProtocol):
                     f"The Gateway has declared a ready connection. (session: {self._meta.session_id}, sequence: {self._meta.seq}"
                 )
 
+    async def _hook(self, bot: "Bot"):  # noqa
+        """
+        Hooks the Gateway to a bot for event dispatching.
+
+        ---
+
+        The `bot` field allows for numerous bots in theory
+        to be hooked onto with one `GatewayClient` process
+        being ran, allowing for IPC pipes and more intuitive
+        sharding.
+
+        ---
+
+        Parameters
+        ----------
+        bot : `retux.Bot`
+            The bot instance to hook onto. This instance
+            can be any bot instance for interchangable
+            handling of 1 main Gateway.
+        """
+        logger.debug("Hooking the bot into the Gateway.")
+        self._bots.append(bot)
+
     async def _dispatch(self, name: str, data: dict):
         """
         Dispatches an event from the Gateway.
@@ -406,7 +432,8 @@ class GatewayClient(GatewayProtocol):
             resource = MISSING
             logger.info(f"The Gateway sent us {name} with no data class found.")
 
-        self._dispatched = {"name": name, "data": resource}
+        for bot in self._bots:
+            await bot._trigger(name.lower(), resource)
 
         # TODO: implement the gateway rate limiting logic here.
         # the theory of this is to "queue" dispatched informatoin
@@ -448,10 +475,10 @@ class GatewayClient(GatewayProtocol):
         # Please spare me Bluenix.
 
         logger.debug("Waiting the appropriate time for probable connection.")
-        await sleep(3)
+        await sleep(1)
 
-        logger.debug("Sending a heartbeat payload to the Gateway.")
         while self._heartbeat_ack:
+            logger.debug("Sending a heartbeat payload to the Gateway.")
             await self._send(payload)
             await sleep(self._meta.heartbeat_interval)
 

@@ -93,16 +93,7 @@ class Bot(BotProtocol):
             The token of the bot.
         """
         async with GatewayClient(token, self.intents) as self._gateway:
-            while not self._gateway._closed:
-                await self._listen()
-
-    async def _listen(self):
-        """Listens to the Gateway for an event that's been dispatched."""
-        if self._gateway._dispatched is not None:
-            await self._trigger(
-                self._gateway._dispatched["name"], self._gateway._dispatched["data"]
-            )
-            self._gateway._dispatched = None
+            await self._gateway._hook(self)
 
     def _register(self, coro: Coroutine, name: Optional[str] = None, event: Optional[bool] = True):
         """
@@ -119,8 +110,9 @@ class Bot(BotProtocol):
             Whether the coroutine is a Gateway event or not.
             Defaults to `True`.
         """
-        _name = (f"on_{name}" if event else name) if name else coro.__name__
+        _name = (name if event else name) if name else coro.__name__
 
+        logger.debug(f"Registering callback for {_name}.")
         call = self._calls.get(_name, [])
         call.append(coro)
 
@@ -128,17 +120,19 @@ class Bot(BotProtocol):
 
     async def _trigger(self, name: str, *args):
         """
-        Triggers a coroutine registered for callbacks.
+        Triggers a name registered for callbacks.
 
         Parameters
         ----------
         name : `str`
-            The name associated with the coroutine.
+            The name associated with the callbacks.
         """
         for event in self._calls.get(name, []):
-            await run(event, *args)
+            await event(*args)
 
-    def on(self, coro: Coroutine, name: NotNeeded[str] = MISSING) -> Callable[..., Any]:
+    def on(
+        self, coro: NotNeeded[Coroutine] = MISSING, *, name: NotNeeded[str] = MISSING
+    ) -> Callable[..., Any]:
         """
         Listens to events given from the Gateway.
 
@@ -170,10 +164,11 @@ class Bot(BotProtocol):
 
         Parameters
         ----------
-        coro : `typing.Coroutine`
+        coro : `typing.Coroutine`, optional
             The coroutine to associate with the event. This is
             to be placed as a decorator on top of an asynchronous
             function.
+            This is only "optional" when `name` has been specified.
         name : `str`, optional
             The name associated with the event. This defaults to the
             name of the coroutine, prefixed with `on_`.
@@ -186,8 +181,11 @@ class Bot(BotProtocol):
         """
 
         def decor(coro: Coroutine):
-            self._register(coro, name=coro.__name__ if name is MISSING else name)
+            self._register(coro, name=name if name is not MISSING else coro.__name__)
             return coro
+
+        if coro is not MISSING:
+            return decor(coro)
 
         return decor
 
