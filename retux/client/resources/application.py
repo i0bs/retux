@@ -56,6 +56,7 @@ class Application:
     """
 
     # TODO: consider making icon hash a File object
+    # TODO: implement User object
     id: str | Snowflake = field(converter=Snowflake)
     """The ID of the application."""
     name: str = field()
