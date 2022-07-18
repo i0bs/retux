@@ -32,7 +32,7 @@ class Application:
     owner : `User`, optional
         A partial user object representing the application owner.
     summary : `str`
-        **Deprecated**. This is an empty string that will be removed in v11. Defaults to `""`
+        **Deprecated**. This is an empty string that will be removed in v11. Defaults to an empty string.
     verify_key : `str`
         The hex encoded key for verification in interactions and the gamesdk's getticket.
     team : `SPECIAL CASE`
