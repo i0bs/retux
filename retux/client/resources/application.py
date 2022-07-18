@@ -35,7 +35,7 @@ class Application:
         **Deprecated**. This is an empty string that will be removed in v11. Defaults to an empty string.
     verify_key : `str`
         The hex encoded key for verification in interactions and the gamesdk's getticket.
-    team : `SPECIAL CASE`
+    team : `Team`
         A team object representing the team that the application belongs to.
     guild_id : `Snowflake`, optional
         The guild_id to the linked server if the application is a game sold on Discord.
