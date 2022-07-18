@@ -38,13 +38,16 @@ class Application:
     team : `Team`
         A team object representing the team that the application belongs to.
     guild_id : `Snowflake`, optional
-        The guild_id to the linked server if the application is a game sold on Discord.
+        The ID of the guild if the application is a game sold on Discord.
     primary_sku_id : `Snowflake`, optional
         The ID of the "game sku" if it exists and the application is a game sold on Discord.
     slug : `str`, optional
         The url slug that links to the application's store page if it is a game sold on Discord.
     cover_image : `str`, optional
         The hash for the default rich presence invite cover.
+        
+        This hash is pre-determined by the API and does not reflect
+        the URL path.
     flags : `ApplicationFlags`, optional
         The public flags of the application.
     tags : `list[str]`, optional
@@ -84,13 +87,18 @@ class Application:
     team: dict | Team = field(converter=Team)
     """A team object representing the team that the application belongs to."""
     guild_id: str | Snowflake = field(default=None, converter=Snowflake)
-    """The guild_id to the linked server if the application is a sold game."""
+    """The ID of the guild if the application is a sold game."""
     primary_sku_id: str | Snowflake = field(default=None, converter=Snowflake)
     """The ID of the "game sku" if it exists and the application is a game sold on Discord."""
     slug: str = field(default=None)
     """IThe url slug that links to the application's store page if it is a game sold on Discord."""
     cover_image: str = field(default=None)
-    """The hash for the default rich presence invite cover."""
+    """
+    The hash for the default rich presence invite cover.
+        
+    This hash is pre-determined by the API and does not reflect
+    the URL path.
+    """
     flags: int | ApplicationFlags = field(default=None, converter=ApplicationFlags)
     """The public flags of the application."""
     tags: list[str] | None = field(converter=list, default=None)
