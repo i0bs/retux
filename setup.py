@@ -11,7 +11,7 @@ def read(fp):
 
 VERSION = "0.0.2"
 README = read("README.md")
-REQUIREMENTS = open("requirements.txt", "r").read().strip().splitlines()
+# REQUIREMENTS = open("requirements.txt", "r").read().strip().splitlines()
 AUTHOR_NAME = "i0"
 AUTHOR_EMAIL = "me@i0.gg"
 
