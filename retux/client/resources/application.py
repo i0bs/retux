@@ -1,7 +1,7 @@
 from attrs import define, field
 from enum import IntFlag
 
-from retux.client.resources.abc import Snowflake
+from .abc import Snowflake
 
 
 @define(kw_only=True)
