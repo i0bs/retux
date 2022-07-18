@@ -7,7 +7,7 @@ from typing import Any, Protocol
 
 from attrs import asdict, define, field
 from cattrs import structure_attrs_fromdict
-from trio import open_nursery, sleep_until
+from trio import open_nursery, sleep
 from trio_websocket import ConnectionClosed, WebSocketConnection, open_websocket_url
 
 from ..client.flags import Intents
@@ -85,10 +85,6 @@ class _GatewayPayload:
     """The sequence number, used for resuming sessions and heartbeats."""
     t: str | None = field(default=None)
     """The name of the payload's event."""
-
-    # TODO: look into seeing if property methods are still
-    # allowed in attrs-decorated classes. I'm almost certain
-    # that they're not, and if so, look into a wrapper class.
 
     @property
     def opcode(self) -> int:
@@ -180,6 +176,8 @@ class GatewayClient(GatewayProtocol):
         Metadata representing connection parameters for the Gateway.
     _closed : `bool`
         Whether the Gateway connection is closed or not.
+    _heartbeat_ack : `bool`
+        Whether we've received the first heartbeat acknowledgement or not.
     _last_ack : `list[float]`
         The before/after time of the last Gateway event tracked. See `latency` for Gateway connection timing.
     _dispatched : `dict`
@@ -199,6 +197,8 @@ class GatewayClient(GatewayProtocol):
     """Metadata representing connection parameters for the Gateway."""
     _closed: bool = True
     """Whether the Gateway connection is closed or not."""
+    _heartbeat_ack: bool = False
+    """Whether we've received the first heartbeat acknowledgement or not."""
     _last_ack: list[float]
     """The before/after time of the last Gateway event tracked. See `latency` for Gateway connection timing."""
     _dispatched: object | None = None
@@ -232,7 +232,7 @@ class GatewayClient(GatewayProtocol):
         self.token = token
         self.intents = intents
         self._meta = _GatewayMeta(version=version, encoding=encoding, compress=compress)
-        self._tasks = None  # this is just for the nursery process with heartbeats.
+        self._tasks = None
 
     async def __aenter__(self):
         self._tasks = open_nursery()
@@ -278,9 +278,6 @@ class GatewayClient(GatewayProtocol):
             The payload to send.
         """
 
-        # TODO: allow another compression types to interpret
-        # in the form of bytes.
-
         try:
             json = dumps(asdict(payload))
             resp = await self._conn.send_message(json)  # noqa
@@ -302,6 +299,8 @@ class GatewayClient(GatewayProtocol):
             f"{__gateway_url__}?v={self._meta.version}&encoding={self._meta.encoding}"
             f"{'' if self._meta.compress is None else f'&compress={self._meta.compress}'}"
         ) as self._conn:
+            self._closed = self._conn.closed
+
             if self._closed:
                 await self._conn.aclose()
                 await self.reconnect()
@@ -314,6 +313,9 @@ class GatewayClient(GatewayProtocol):
 
     async def reconnect(self):
         """Reconnects to the Gateway and reinitiates a WebSocket state."""
+        self._closed = True
+        self._heartbeat_ack = False
+
         if self._closed:
             await self.connect()
         else:
@@ -341,12 +343,10 @@ class GatewayClient(GatewayProtocol):
                     logger.debug("New connection found, identifying to the Gateway.")
                     await self._identify()
                     self._meta.heartbeat_interval = payload.data["heartbeat_interval"] / 1000
+                    logger.debug(f"Heartbeat set to {self._meta.heartbeat_interval}ms.")
+                    self._heartbeat_ack = True
+                    logger.debug("Began the heartbeat process.")
             case _GatewayOpCode.HEARTBEAT_ACK:
-
-                # FIXME: this may produce inaccurate results if multiple
-                # events come into contact later on with additional _last_ack
-                # declarations.
-
                 self._last_ack[1] = perf_counter()
                 logger.debug(f"The heartbeat was acknowledged. (took {self.latency}ms.)")
                 self._last_ack[0] = perf_counter()
@@ -442,10 +442,18 @@ class GatewayClient(GatewayProtocol):
         """Sends a heartbeat payload to the Gateway."""
         payload = _GatewayPayload(op=_GatewayOpCode.HEARTBEAT.value, d=self._meta.seq)
 
+        # FIXME: Move towards a better solution for the heartbeat acknowledgement loop.
+        # This is a really bad approach to fixing heartbeat timing, but this only fires
+        # during the initialisation of the async context manager.
+        # Please spare me Bluenix.
+
+        logger.debug("Waiting the appropriate time for probable connection.")
+        await sleep(3)
+
         logger.debug("Sending a heartbeat payload to the Gateway.")
-        while not self._closed:
+        while self._heartbeat_ack:
             await self._send(payload)
-            await sleep_until(self._meta.heartbeat_interval)
+            await sleep(self._meta.heartbeat_interval)
 
     async def request_guild_members(
         self,
@@ -482,7 +490,7 @@ class GatewayClient(GatewayProtocol):
             same maximum as `limit` regardless of declaration.
         nonce : `str`, optional
             A nonce used for identification when receiving a
-            Guild Members Chunk event.
+            `Guild Members Chunk` event.
         """
         payload = _GatewayPayload(
             op=_GatewayOpCode.REQUEST_GUILD_MEMBERS,
