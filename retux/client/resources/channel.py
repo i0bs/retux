@@ -1,6 +1,7 @@
 from enum import IntEnum, IntFlag
 from attrs import define, field
 from retux.client.resources.abc import Snowflake, Object
+from retux.client.resources.user import User
 
 
 class ChannelType(IntEnum):
