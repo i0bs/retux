@@ -7,7 +7,10 @@ __all__ = ("PartialApplication", "Application", "ApplicationFlags", "InstallPara
 
 
 class ApplicationFlags(IntFlag):
-    """Application flags are a set of bitwise values that represent the public flags of an application."""
+    """
+    Application flags are a set of bitwise values that represent the public flags
+    of an application.
+    """
 
     GATEWAY_PRESENCE = 1 << 12
     """The intent required for bots in 100 or more servers in order to receive presence_update events."""

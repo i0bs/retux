@@ -1,5 +1,6 @@
 from attrs import define, field
 
+from ...client.resources.guild import UnavailableGuild
 from ...client.resources.application import PartialApplication
 
 from .abc import _Event
@@ -26,6 +27,8 @@ class Ready(_Event):
         The used version of the Discord API.
     user_settings : `dict`, optional
         The settings of the bot application, if present.
+    guilds : `list[UnavailableGuild]`
+        The guilds unavailable to the bot.
     geo_ordered_rtc_regions : `list[str]`
         The RTC voice regions accessible to the bot application.
     session_type : `str`
@@ -50,8 +53,7 @@ class Ready(_Event):
     # TODO: implement User object
     user: dict = field(kw_only=True)
     """The user form of the bot application."""
-    # TODO: implement Unavailable Guild object
-    guilds: list[dict] = field(kw_only=True)
+    guilds: list[dict] | list[UnavailableGuild] = field(converter=UnavailableGuild, kw_only=True)
     """The guilds unavailable to the bot."""
     # TODO: Investigate the guild_join_requests field.
     guild_join_requests: list | None = field(default=None, kw_only=True)
