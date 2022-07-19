@@ -286,7 +286,7 @@ class Channel:
     """
     The topic of the channel.
 
-    A channel tpic can be between 1 and 1024 characters.
+    A channel topic is in-between 1-1024 characters.
     """
     nsfw: bool | None = field(default=False)
     """Whether or not the channel is nsfw. Defaults to False."""
