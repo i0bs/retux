@@ -118,7 +118,7 @@ class Overwrite(Object):
     type : `int`
         The type of overwrite.
 
-        User 0 for to overwrite a role permission and 1 to overwrite a member permission.
+        User `0` for to overwrite a role permission and `1` to overwrite a member permission.
     allow : `str`
         The bit set representing the overwrite's allowed permissions.
     deny : `str`
