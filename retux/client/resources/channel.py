@@ -280,7 +280,7 @@ class Channel:
     """
     The name of the channel. 
     
-    A channel name can be between 1 and 100 characters.
+    A channel name is in-between 1-100 characters.
     """
     topic: str | None = field(default=None)
     """
