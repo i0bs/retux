@@ -327,7 +327,9 @@ class Channel(Object):
     type : `ChannelType`
         The type of the channel.
     guild_id : `Snowflake`, optional
-        The ID of the guild. This is nullable due to some Gateway events lacking the data for the ID.
+        The ID of the guild. 
+        This is nullable due to some Gateway events 
+        lacking the data for the ID.
     position : `int`, optional
         Sorted position of the channel.
     permission_overwrites : `list[Overwrite]`, optional
@@ -335,13 +337,13 @@ class Channel(Object):
     name : `str`, optional
         The name of the channel.
 
-        A channel name can be between 1 and 100 characters.
+        A channel name is in-between 1-100 characters.
     topic : `str`, optional
         The topic of the channel.
 
-        A channel tpic can be between 1 and 1024 characters.
+        A channel topic is in-between 1-1024 characters.
     nsfw : `bool`, optional
-        Whether or not the channel is nsfw. Defaults to False.
+        Whether or not the channel is NSFW. Defaults to `False`.
     last_message_id : `Snowflake`, optional
         The ID of the last message sent in this channel
 
@@ -369,7 +371,7 @@ class Channel(Object):
     last_pin_timestamp : `str`, optional
         The time when the last message was pinned.
     rtc_region : `str`, optional
-        Voice region id for the voice channel, automatic when set to null.
+        The channel's voice region ID if present, set to automatic when left as `None`..
     video_quality_mode : `VideoQualityMode`, optional
         The video quality mode of the voice channel.
     message_count : `int`, optional
@@ -387,9 +389,9 @@ class Channel(Object):
 
         This is only included on certain api endpoints.
     default_auto_archive_duration : `int`, optional
-        Default archive duration for clients in minutes.
-
-        Can be set to 60, 1440, 4320, 10080.
+        The default archive duration for threads in minutes.
+    
+        Can be set to `60`, `1440`, `4320`, `10080`.
     permissions : `str`, optional
         Computed permissions for the invoking user in the channel, including overwrites.
 
@@ -405,6 +407,7 @@ class Channel(Object):
     guild_id: str | Snowflake | None = field(default=None, converter=Snowflake)
     """
     The ID of the guild.
+
     This is nullable due to some Gateway events
     lacking the data for the ID.
     """
