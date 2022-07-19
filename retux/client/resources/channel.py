@@ -310,11 +310,11 @@ class Channel:
     """The recipients of the dm."""
     icon: str | None = field(default=None)
     """The hash for the channel's icon."""
-    owner_id: str | Snowflake | None = field(default=None, converter=Snowflake)
+    owner_id: str | Snowflake | None = field(converter=Snowflake, default=None)
     """The ID of the creator of the group dm or thread."""
-    application_id: str | Snowflake | None = field(default=None, converter=Snowflake)
+    application_id: str | Snowflake | None = field(converter=Snowflake, default=None)
     """The ID of the application that created the dm if it is bot-created."""
-    parent_id: str | Snowflake | None = field(default=None, converter=Snowflake)
+    parent_id: str | Snowflake | None = field(converter=Snowflake, default=None)
     """
     The ID of the parent of the channel
 
@@ -325,7 +325,7 @@ class Channel:
     rtc_region: str | None = field(default=None)
     """The channel's voice region ID if present, set to automatic when left as `None`."""
     video_quality_mode: int | VideoQualityMode | None = field(
-        default=None, converter=VideoQualityMode
+        converter=VideoQualityMode, default=None
     )
     """The video quality mode of the voice channel."""
     message_count: int | None = field(default=None)
@@ -341,7 +341,7 @@ class Channel:
     Stops counting at 50.
     """
     thread_metadata: dict | ThreadMetadata | None = field(
-        default=None, converter=ThreadMetadata
+        converter=ThreadMetadata, default=None
     )
     """Thread-specific fields not needed by other channels."""
     member: ThreadMember | None = field(default=None)
