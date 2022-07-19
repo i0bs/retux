@@ -178,7 +178,7 @@ class FollowedChannel:
 
 
 @define()
-class Channel:
+class Channel(Object):
     """
     Represents a Channel from Discord.
 
