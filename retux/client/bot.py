@@ -18,6 +18,9 @@ class BotProtocol(Protocol):
     def start(self, token: str):
         ...
 
+    def close(self):
+        ...
+
     async def restart(self):
         ...
 
