@@ -79,6 +79,10 @@ class Bot(BotProtocol):
         self.http = HTTPClient(token)
         run(self._connect, token)
 
+    def close(self):
+        """Closes the current connection with Discord."""
+        self._gateway._stopped = True
+
     async def restart(self):
         """Restarts a connection with Discord."""
         await self._gateway.reconnect()

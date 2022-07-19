@@ -181,6 +181,8 @@ class GatewayClient(GatewayProtocol):
         The tasks associated with the Gateway, for reconnection and heartbeating.
     _closed : `bool`
         Whether the Gateway connection is closed or not.
+    _stopped : `bool`
+        Whether the Gateway connection was forcefully stopped or not.
     _heartbeat_ack : `bool`
         Whether we've received the first heartbeat acknowledgement or not.
     _last_ack : `list[float]`
@@ -204,6 +206,8 @@ class GatewayClient(GatewayProtocol):
     """The tasks associated with the Gateway, for reconnection and heartbeating."""
     _closed: bool = True
     """Whether the Gateway connection is closed or not."""
+    _stopped: bool = False
+    """Whether the Gateway connection was forcefully stopped or not."""
     _heartbeat_ack: bool = False
     """Whether we've received the first heartbeat acknowledgement or not."""
     _last_ack: list[float] = []
@@ -298,6 +302,7 @@ class GatewayClient(GatewayProtocol):
 
     async def connect(self):
         """Connects to the Gateway and initiates a WebSocket state."""
+        self._stopped = False
         self._last_ack = [perf_counter(), perf_counter()]
 
         # FIXME: this connection type will only work with JSON in mind.
@@ -311,6 +316,8 @@ class GatewayClient(GatewayProtocol):
         ) as self._conn:
             self._closed = self._conn.closed
 
+            if self._stopped:
+                await self._conn.aclose()
             if self._closed:
                 await self._conn.aclose()
                 await self.reconnect()
