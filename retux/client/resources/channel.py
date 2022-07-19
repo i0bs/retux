@@ -292,7 +292,7 @@ class Channel:
     """Whether or not the channel is NSFW. Defaults to `False`."""
     last_message_id: str | Snowflake | None = field(default=None, converter=Snowflake)
     """
-    The ID of the last message sent in this channel
+    The ID of the last message sent in this channel.
     
     Can also be a thread if the channel is a forum. May not be an existing or valid message or thread.
     """
