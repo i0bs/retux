@@ -330,13 +330,13 @@ class Channel:
     """The video quality mode of the voice channel."""
     message_count: int | None = field(default=None)
     """"
-    An approximate count of messages in a thread.
+    The approximated amount of messages in a thread.
 
     Stops counting at 50.
     """
     member_count: int | None = field(default=None)
     """
-    An approximate count of users in a thread.
+    The approximated amount of users in a thread.
 
     Stops counting at 50.
     """
