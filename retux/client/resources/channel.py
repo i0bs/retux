@@ -319,7 +319,7 @@ class Channel:
     last_pin_timestamp: str | None = field(default=None)
     """The time when the last message was pinned."""
     rtc_region: str | None = field(default=None)
-    """Voice region id for the voice channel, automatic when set to null."""
+    """The channel's voice region ID if present, set to automatic when left as `None`."""
     video_quality_mode: int | VideoQualityMode | None = field(
         default=None, converter=VideoQualityMode
     )
