@@ -341,7 +341,8 @@ class GatewayClient(GatewayProtocol):
             The payload being sent from the Gateway.
         """
         logger.debug(
-            f"Tracking payload: {payload.opcode}{'.' if payload.name is None else f' ({payload.name})'}"
+            f"Tracking payload: {payload.opcode}/{_GatewayOpCode(payload.opcode).name}."
+            f"{'' if payload.name is None else f' ({payload.name})'}"
         )
 
         match _GatewayOpCode(payload.opcode):
@@ -364,9 +365,7 @@ class GatewayClient(GatewayProtocol):
                 logger.info(
                     "Our Gateway connection has suddenly invalidated. Checking reconnection status."
                 )
-                await self._dispatch(
-                    "invalid_session", InvalidSession, _invalid_session=bool(payload.data)
-                )
+                await self._dispatch("INVALID_SESSION", InvalidSession, *(payload.data))
 
                 if bool(payload.data):
                     logger.debug(
@@ -382,7 +381,7 @@ class GatewayClient(GatewayProtocol):
                     await self.reconnect()
             case _GatewayOpCode.RECONNECT:
                 logger.info("The Gateway has told us to reconnect.")
-                await self._dispatch("reconnect", Reconnect)
+                await self._dispatch("RECONNECT", Reconnect)
 
                 if payload.data:
                     logger.info("Resuming last known connection.")
@@ -391,8 +390,6 @@ class GatewayClient(GatewayProtocol):
                     await self._conn.aclose()
                     await self.reconnect()
             case _GatewayOpCode.DISPATCH:
-                logger.debug(f"Dispatching {payload.name}")
-
                 if payload.name != "RESUMED" and payload.name != "READY":
                     await self._dispatch(payload.name, payload.data)
         match payload.name:
@@ -400,14 +397,14 @@ class GatewayClient(GatewayProtocol):
                 logger.debug(
                     f"The connection was resumed. (session: {self._meta.session_id}, sequence: {self._meta.seq}"
                 )
-                await self._dispatch("resumed", Resumed, **payload.data)
+                await self._dispatch("RESUMED", Resumed, **payload.data)
             case "READY":
                 self._meta.session_id = payload.data["session_id"]
                 self._meta.seq = payload.sequence
                 logger.debug(
                     f"The Gateway has declared a ready connection. (session: {self._meta.session_id}, sequence: {self._meta.seq}"
                 )
-                await self._dispatch("ready", Ready, **payload.data)
+                await self._dispatch("READY", Ready, **payload.data)
 
     async def _hook(self, bot: "Bot"):  # noqa
         """
@@ -452,17 +449,30 @@ class GatewayClient(GatewayProtocol):
         ----------
         name : `str`
             The name of the event.
-        data : `dict`, `object`
+        data : `dict`, `Event`
             The supplied payload data from the event.
         """
 
         # TODO: implement how events are built from a factory.
 
+        logger.debug(f"Dispatching {name}: {data if isinstance(data, dict) else kwargs}")
+
         for bot in self._bots:
-            if type(data) == Event:
-                await bot._trigger(name.lower(), data(name.lower(), bot, *args, **kwargs))
-            elif type(data) == dict:
-                await bot._trugger(name.lower(), data)
+            if isinstance(data, dict):
+                await bot._trigger(name.lower(), data)
+            else:
+                # FIXME: write a better sanitiser for internal values that
+                # may be passed to us by Discord.
+                # See important note: https://discord.com/developers/docs/topics/gateway#gateways
+                await bot._trigger(
+                    name.lower(),
+                    data(
+                        name.lower(),
+                        bot if kwargs.get("id") else MISSING,
+                        *args,
+                        **{k: v for k, v in kwargs.items() if not k.startswith("_")},
+                    ),
+                )
 
     async def _identify(self):
         """Sends an identification payload to the Gateway."""

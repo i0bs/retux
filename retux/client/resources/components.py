@@ -54,7 +54,7 @@ class ActionRow(Component):
 
     type: int | ComponentType = field(converter=ComponentType, default=ComponentType.ACTION_ROW)
     """The type of component, as `ComponentType.ACTION_ROW`."""
-    components: list[Component] = field(converter=list, default=None)
+    components: list[Component] = field(default=None)
     """The components stored in the action row."""
 
 
@@ -221,7 +221,7 @@ class SelectMenu(Component):
     """The type of component, as `ComponentType.SELECT_MENU`."""
     custom_id: str = field()
     """A customisable identifiable descriptor for the select menu."""
-    options: list[SelectOption] = field(converter=list)
+    options: list[SelectOption] = field()
     """The options of the select menu."""
     placeholder: str | None = field(default=None)
     """The placeholder text of the select menu, if present."""
@@ -333,5 +333,5 @@ class Modal(Component):
     """The title of the modal."""
     custom_id: str = field()
     """A customisable identifiable descriptor for the modal."""
-    components: list[TextInput] = field(converter=list)
+    components: list[TextInput] = field()
     """The components stored in the modal."""

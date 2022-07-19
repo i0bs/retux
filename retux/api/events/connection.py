@@ -1,11 +1,11 @@
 from attrs import define, field
 
-from ...client.resources.abc import Partial
+from ...client.resources.application import PartialApplication
 
 from .abc import Event
 
 
-@define(kw_only=True)
+@define()
 class Ready(Event):
     """
     Represents when the client has successfully connected.
@@ -14,14 +14,18 @@ class Ready(Event):
     ----------
     v : `int`
         The used version of the Discord API.
+    user_settings : `dict`, optional
+        The settings of the bot application, if present.
+    geo_ordered_rtc_regions : `list[str]`
+        The RTC voice regions accessible to the bot application.
+    session_type : `str`
+        The type of session that the bot has established with the Gateway.
     session_id : `str`
-        The ID of the bot's Gateway connection session,
-        used for reconnection.
+        The ID of the bot's Gateway connection session, used for reconnection.
     shard : `list[int]`, optional
         The shards of the Gateway connection, if present.
     application : `Partial`
-        The application form of the bot.
-        Contains only `id` and `flags`.
+        The application form of the bot. Contains only `id` and `flags`.
 
     Methods
     -------
@@ -29,19 +33,41 @@ class Ready(Event):
         The used version of the Discord API.
     """
 
-    v: int = field()
+    v: int = field(kw_only=True)
     """The used version of the Discord API."""
+    user_settings: dict | None = field(default=None, kw_only=True)
+    """The settings of the bot application, if present."""
     # TODO: implement User object
-    # user: User = field(converter=User)
-    # """The user form of the bot application."""
+    user: dict = field(kw_only=True)
+    """The user form of the bot application."""
     # TODO: implement Unavailable Guild object
-    # guilds: list[dict] | list[UnavailableGuild] = field(converter=list)
-    # """The guilds unavailable to the bot."""
-    session_id: str = field()
+    guilds: list[dict] = field(kw_only=True)
+    """The guilds unavailable to the bot."""
+    # TODO: Investigate the guild_join_requests field.
+    guild_join_requests: list | None = field(default=None, kw_only=True)
+    """
+    The pending approval requests for guilds the bot cannot access.
+
+    Some data is conferred here supplied from `guilds`.
+    """
+    geo_ordered_rtc_regions: list[str] = field(kw_only=True)
+    """The RTC voice regions accessible to the bot application."""
+    session_type: str = field(kw_only=True)
+    """The type of session that the bot has established with the Gateway."""
+    session_id: str = field(kw_only=True)
     """The ID of the bot's Gateway connection session, used for reconnection."""
-    shard: list[int] | None = field(converter=list, default=None)
+    # TODO: Investigate the relationships field.
+    relationships: list | None = field(default=None, kw_only=True)
+    """The relationships associated to the bot application, if present."""
+    # TODO: Investigate the private_channels field.
+    private_channels: list | None = field(default=None, kw_only=True)
+    """The private channels of the bot application, if present."""
+    # TODO: Investigate the presences field.
+    presences: list | None = field(default=None, kw_only=True)
+    """The presences of the bot application, if present."""
+    shard: list[int] | None = field(default=None, kw_only=True)
     """The shards of the Gateway connection, if present."""
-    application: dict | Partial = field(converter=Partial)
+    application: dict | PartialApplication = field(converter=PartialApplication, kw_only=True)
     """The application form of the bot. Contains only `id` and `flags`."""
 
     @property
@@ -50,7 +76,7 @@ class Ready(Event):
         return self.v
 
 
-@define(kw_only=True)
+@define()
 class Resumed(Event):
     """
     Represents when the client has successfully resumed a connection.
@@ -65,11 +91,11 @@ class Resumed(Event):
         The last sequence number given for the session.
     """
 
-    token: str = field()
+    token: str = field(kw_only=True)
     """The token of the bot used."""
-    session_id: str = field()
+    session_id: str = field(kw_only=True)
     """The ID of the Gateway connection session."""
-    seq: int = field()
+    seq: int = field(kw_only=True)
     """The last sequence number given for the session."""
 
 

@@ -2,7 +2,7 @@ from enum import IntEnum
 
 from attrs import define, field
 
-from .abc import Snowflake
+from .abc import Object, Snowflake
 
 
 @define(kw_only=True)
@@ -22,7 +22,7 @@ class ApplicationCommandOptionChoice:
 
     name: str = field()
     """The name of the application command option choice in-between 1-100 characters."""
-    name_localizations: dict[str, str] | None = field(converter=dict, default=None)
+    name_localizations: dict[str, str] | None = field(default=None)
     """The localised dictionary of names for the application command option choices, if present."""
     value: str | int = field()
     """The value of the application command option type. The maximum length is 100 characters if `STRING`."""
@@ -105,24 +105,22 @@ class ApplicationCommandOption:
     """The type of application command option."""
     name: str = field()
     """The name of the option in-between 1-32 characters."""
-    name_localizations: dict[str, str] | None = field(converter=dict, default=None)
+    name_localizations: dict[str, str] | None = field(default=None)
     """The localised dictionary of names for the application command option, if present."""
     description: str = field()
     """The description of the option in-between 1-100 characters."""
-    description_localizations: dict[str, str] | None = field(converter=dict, default=None)
+    description_localizations: dict[str, str] | None = field(default=None)
     """The localised dictionary of descriptions for the application command option, if present."""
     required: bool | None = field(default=None)
     """Whether the application command option is required to be entered or not."""
-    choices: list[ApplicationCommandOptionChoice] | None = field(converter=list, default=None)
+    choices: list[ApplicationCommandOptionChoice] | None = field(default=None)
     """
     Pre-filled selection choices of an application command option.
 
     The choices must be from a `STRING`, `INTEGER` or `NUMBER` type.
     An application command option can have a maximum of 25 choices.
     """
-    options: list[dict] | list["ApplicationCommandOption"] | None = field(
-        converter=list, default=None
-    )
+    options: list[dict] | list["ApplicationCommandOption"] | None = field(default=None)
     """
     The options of the application command, if present.
     Options are only present on `CHAT_INPUT` command types.
@@ -132,7 +130,7 @@ class ApplicationCommandOption:
     """
 
     # TODO: implement a channel type integer enumerable.
-    # channel_types: list[ChannelType] | None = field(converter=list, default=None)
+    # channel_types: list[ChannelType] | None = field(default=None)
     # """The types of channels the option will filter to, if present."""
 
     min_value: int | None = field(default=None)
@@ -163,7 +161,7 @@ class ApplicationCommandType(IntEnum):
 
 
 @define(kw_only=True)
-class ApplicationCommand:
+class ApplicationCommand(Object):
     """
     Represents an application command from Discord.
 
@@ -208,14 +206,14 @@ class ApplicationCommand:
     """The ID of the guild the command is under, if present."""
     name: str = field()
     """The name of the command in-between 1-32 characters."""
-    name_localizations: dict[str, str] | None = field(converter=dict, default=None)
+    name_localizations: dict[str, str] | None = field(default=None)
     """The localised dictionary of names for the application command, if present."""
     description: str = field()
     """
     The description of the command in-between 1-100 characters.
     Descriptions are only present on `CHAT_INPUT` command types.
     """
-    description_localizations: dict[str, str] | None = field(converter=dict, default=None)
+    description_localizations: dict[str, str] | None = field(default=None)
     """The localised dictionary of descriptions for the application command, if present."""
     options: list[dict] | list[ApplicationCommandOption] | None = field(
         converter=list, default=None

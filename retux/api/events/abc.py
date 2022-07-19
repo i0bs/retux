@@ -23,7 +23,7 @@ class Event:
 
     _name: str = field()
     """The name of the Gateway event."""
-    _bot: "Bot" | MISSING = field(default=MISSING)  # noqa
+    _bot: "Bot" = field(default=MISSING)  # noqa
     """
     The bot instance linked to the event. This is added on so
     that we can hook into the instance's calls for callbacks

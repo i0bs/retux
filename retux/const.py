@@ -1,8 +1,7 @@
 from typing import TypeVar, Union
 
-from ..setup import VERSION
 
-__version__ = VERSION
+__version__ = "0.0.2"
 __api_version__ = "v10"
 __api_url__ = f"https://discord.com/api/{__api_version__}/"
 __gateway_url__ = "wss://gateway.discord.gg/"
