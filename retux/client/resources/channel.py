@@ -131,7 +131,7 @@ class Overwrite:
     """
     The type of overwrite.
 
-    User 0 for to overwrite a role permission and 1 to overwrite a member permission.
+    Use `0` for to overwrite a role's permission and `1` to overwrite a guild member's permission.
     """
     allow: str = field()
     """The bit set representing the overwrite's allowed permissions."""
