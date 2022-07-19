@@ -108,6 +108,13 @@ class User(Object):
         The type of Nitro subscription the user has.
     public_flags : `UserFlags`, optional
         The public flags on the user's account, if present.
+
+    Methods
+    -------
+    tag : `str`
+        The 4-digit tag of the user.
+    mention : `str`
+        The mentionable version of the user.
     """
 
     id: str | Snowflake = field(converter=Snowflake)
