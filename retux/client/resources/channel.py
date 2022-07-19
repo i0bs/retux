@@ -46,7 +46,7 @@ class ChannelFlags(IntFlag):
     """
     This thread is pinned to the top of its parent channel.
     
-    Only availible on forun channels.
+    Only available on forum channels.
     """
 
 
