@@ -289,7 +289,7 @@ class Channel:
     A channel topic is in-between 1-1024 characters.
     """
     nsfw: bool | None = field(default=False)
-    """Whether or not the channel is nsfw. Defaults to False."""
+    """Whether or not the channel is NSFW. Defaults to `False`."""
     last_message_id: str | Snowflake | None = field(default=None, converter=Snowflake)
     """
     The ID of the last message sent in this channel
