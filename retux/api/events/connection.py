@@ -2,13 +2,23 @@ from attrs import define, field
 
 from ...client.resources.application import PartialApplication
 
-from .abc import Event
+from .abc import _Event
+
+__all__ = ("Ready", "HeartbeatAck", "Resumed", "Reconnect", "InvalidSession")
 
 
 @define()
-class Ready(Event):
+class Ready(_Event):
     """
     Represents when the client has successfully connected.
+
+    ---
+
+    The `READY` event can be the largest and most complex one
+    the Gateway will send, as it contains all the state required
+    for a client to begin interacting with the rest of the platform.
+
+    ---
 
     Attributes
     ----------
@@ -77,7 +87,22 @@ class Ready(Event):
 
 
 @define()
-class Resumed(Event):
+class HeartbeatAck(_Event):
+    """
+    Represents when the client's Gateway connection has validated a heartbeat.
+
+    Attributes
+    ----------
+    latency : `float`
+        The latency or difference in milliseconds between heartbeats.
+    """
+
+    latency: float = field(kw_only=True)
+    """The latency or difference in milliseconds between heartbeats."""
+
+
+@define()
+class Resumed(_Event):
     """
     Represents when the client has successfully resumed a connection.
 
@@ -100,13 +125,13 @@ class Resumed(Event):
 
 
 @define()
-class Reconnect(Event):
+class Reconnect(_Event):
     """
     Represents when the client has been told to reconnect.
 
     ---
 
-    It should be noted that reconnection is **automatically handled for you**
+    It should be noted that reconnection is automatically handled for you
     in retux already. This event should never be used outside of logging down
     when reconnections were made. Do not use this event to force a reconnection
     unless you know what you're doing!
@@ -114,7 +139,7 @@ class Reconnect(Event):
 
 
 @define(repr=False)
-class InvalidSession(Event):
+class InvalidSession(_Event):
     """
     Represents when the client has an invalidated Gateway connection.
 

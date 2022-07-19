@@ -145,6 +145,10 @@ class Bot(BotProtocol):
 
         Examples
         --------
+        In retux, `event` is an argument containing the information relating
+        to the event you're listening to. This argument is always required
+        for an `@on` coroutine.
+
         ```
         @bot.on
         async def ready(event):
@@ -167,7 +171,7 @@ class Bot(BotProtocol):
         ```
         @bot.on
         async def reconnect(event):
-            if self.is_offline:
+            if bot.is_offline:
                 await bot.restart()
         ```
 

@@ -3,6 +3,8 @@ from typing import Union
 
 from attrs import define, field
 
+__all__ = ("Snowflake", "Partial", "Object", "Component")
+
 
 @define(repr=False, eq=False)
 class Snowflake:
@@ -19,9 +21,13 @@ class Snowflake:
 
     Attributes
     ----------
-    _snowflake : `str`, `int`
-        The snowflake itself. This should never need to be called upon directly.
-        Please use the representation of the class itself.
+    _snowflake : `str`, optional
+        The internally stored snowflake. Snowflakes are always in string-form.
+
+        The snowflake may only be `None` in the event that a given
+        field in a resource does not supply it. This should not be always
+        taken for granted as having a value. Please use the representation
+        of the class itself.
 
     Methods
     -------
@@ -41,11 +47,18 @@ class Snowflake:
         generated on this snowflake, e.g. a resource.
     """
 
-    _snowflake: str | int = field(converter=str)
-    """The internally stored snowflake. Snowflakes are always in a string-form."""
+    _snowflake: str | int | None = field(converter=str)
+    """
+    The internally stored snowflake. Snowflakes are always in string-form.
 
-    def __repr__(self) -> str:
-        return str(self._snowflake)
+    The snowflake may only be `None` in the event that a given
+    field in a resource does not supply it. This should not be always
+    taken for granted as having a value. Please use the representation
+    of the class itself.
+    """
+
+    def __repr__(self) -> str | None:
+        return self._snowflake
 
     def __eq__(self, other: Union[str, int, "Snowflake"]) -> bool:
         if type(other) == int:

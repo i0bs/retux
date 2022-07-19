@@ -10,8 +10,8 @@ from cattrs import structure_attrs_fromdict
 from trio import open_nursery, sleep, Nursery
 from trio_websocket import ConnectionClosed, WebSocketConnection, open_websocket_url
 
-from .events.abc import Event
-from .events.connection import InvalidSession, Ready, Reconnect, Resumed
+from .events.abc import _Event
+from .events.connection import HeartbeatAck, InvalidSession, Ready, Reconnect, Resumed
 
 from ..client.flags import Intents
 from ..client.resources.abc import Snowflake
@@ -360,6 +360,7 @@ class GatewayClient(GatewayProtocol):
             case _GatewayOpCode.HEARTBEAT_ACK:
                 self._last_ack[1] = perf_counter()
                 logger.debug(f"The heartbeat was acknowledged. (took {self.latency}ms.)")
+                await self._dispatch("HEARTBEAT_ACK", HeartbeatAck, latency=self.latency)
                 self._last_ack[0] = perf_counter()
             case _GatewayOpCode.INVALID_SESSION:
                 logger.info(
@@ -380,15 +381,9 @@ class GatewayClient(GatewayProtocol):
                     await self._conn.aclose()
                     await self.reconnect()
             case _GatewayOpCode.RECONNECT:
-                logger.info("The Gateway has told us to reconnect.")
+                logger.info("The Gateway has told us to reconnect. Resuming last known connection.")
                 await self._dispatch("RECONNECT", Reconnect)
-
-                if payload.data:
-                    logger.info("Resuming last known connection.")
-                    await self._resume()
-                else:
-                    await self._conn.aclose()
-                    await self.reconnect()
+                await self._resume()
             case _GatewayOpCode.DISPATCH:
                 if payload.name != "RESUMED" and payload.name != "READY":
                     await self._dispatch(payload.name, payload.data)
@@ -429,7 +424,7 @@ class GatewayClient(GatewayProtocol):
         logger.debug("Hooking the bot into the Gateway.")
         self._bots.append(bot)
 
-    async def _dispatch(self, name: str, data: dict | Event, *args, **kwargs):
+    async def _dispatch(self, name: str, data: dict | _Event, *args, **kwargs):
         """
         Dispatches an event from the Gateway.
 
@@ -439,9 +434,10 @@ class GatewayClient(GatewayProtocol):
         information regarding an event non-relevant to
         the connection.
 
-        The `*args` and `**kwargs` signature is for data sent in the form
-        of an `Event`. These are only to be used to fill in the *actual*
-        data of the Gateway event, whereas `data` is purely the dataclass.
+        The `*args` and `**kwargs` signature is for data sent
+        in the form of an `_Event`. These are only to be used
+        to fill in the actual data of the Gateway event, whereas
+        `data` is purely the dataclass.
 
         ---
 
@@ -449,7 +445,7 @@ class GatewayClient(GatewayProtocol):
         ----------
         name : `str`
             The name of the event.
-        data : `dict`, `Event`
+        data : `dict`, `_Event`
             The supplied payload data from the event.
         """
 
@@ -468,7 +464,7 @@ class GatewayClient(GatewayProtocol):
                     name.lower(),
                     data(
                         name.lower(),
-                        bot if kwargs.get("id") else MISSING,
+                        bot,
                         *args,
                         **{k: v for k, v in kwargs.items() if not k.startswith("_")},
                     ),

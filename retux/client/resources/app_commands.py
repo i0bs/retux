@@ -4,6 +4,8 @@ from attrs import define, field
 
 from .abc import Object, Snowflake
 
+__all__ = ("ApplicationCommand", "ApplicationCommandOption", "ApplicationCommandOptionChoice")
+
 
 @define(kw_only=True)
 class ApplicationCommandOptionChoice:

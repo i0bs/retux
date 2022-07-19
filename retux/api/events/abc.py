@@ -4,7 +4,7 @@ from ...const import MISSING
 
 
 @define()
-class Event:
+class _Event:
     """
     Represents the base information of a Gateway event from Discord.
 
