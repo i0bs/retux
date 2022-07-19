@@ -273,7 +273,7 @@ class Channel(Object):
     position: int | None = field(default=None)
     """Sorted position of the channel."""
     permission_overwrites: list[dict] | list[Overwrite] | None = field(
-        converter=list, default=None
+        default=None
     )
     """Explicit permission overwrites for members and roles."""
     name: str | None = field(default=None)
@@ -290,7 +290,7 @@ class Channel(Object):
     """
     nsfw: bool | None = field(default=False)
     """Whether or not the channel is NSFW. Defaults to `False`."""
-    last_message_id: str | Snowflake | None = field(default=None, converter=Snowflake)
+    last_message_id: str | Snowflake | None = field(converter=Snowflake, default=None)
     """
     The ID of the last message sent in this channel.
     
@@ -306,7 +306,7 @@ class Channel(Object):
     
     Can be a number up to 21600. Bots, as well as users with the permission manage_messages or manage_channel, are unaffected.
     """
-    recipients: list[dict] | list[User] | None = field(default=None, converter=dict)
+    recipients: list[dict] | list[User] | None = field(default=None)
     """The recipients of the dm."""
     icon: str | None = field(default=None)
     """The hash for the channel's icon."""
@@ -362,5 +362,5 @@ class Channel(Object):
         
     Only included when part of the resolved data received on a slash command interaction.
     """
-    flags: int | ChannelFlags | None = field(default=None, converter=ChannelFlags)
+    flags: int | ChannelFlags | None = field(converter=ChannelFlags, default=None)
     """Channel flags combined as a bitfield."""
