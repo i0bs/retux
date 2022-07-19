@@ -342,7 +342,7 @@ class Channel:
     """Thread-specific fields not needed by other channels."""
     member: ThreadMember | None = field(default=None)
     """
-    Thread member object for the current user if they have joined the thread
+    The thread member representation of the user if they have joined the thread.
         
     This is only included on certain api endpoints.
     """
