@@ -143,23 +143,32 @@ class Bot(BotProtocol):
 
         ---
 
-        Example
-        -------
+        Examples
+        --------
         ```
-        bot = retux.Bot(
-            intents=(
-                retux.Intents.GUILDS
-                | retux.Intents.MESSAGE_CONTENT
-            )
-        )
-
         @bot.on
-        async def on_guild_create(guild: retux.Guild):
-            print(guild.member_count)
+        async def ready(event):
+            print(f"Hello, world! I am {event.user.username}. Running on API version v{event.version}.")
+        ```
 
-        @bot.on("message_create")
-        async def message_events(message: retux.Message):
-            print(message.content)
+        If you'd like to still take control of the coroutine's name,
+        however, you can simply pass the event name into the `@on`
+        decorator.
+        ```
+        @bot.on("ready")
+        async def func_name(event):
+            ...
+        ```
+
+        `@on` empowers developers to also determine when a restart may
+        be needed without having to create your own loop. Please note
+        that this is only an example. retux automatically attempts reconnections
+        if one is called for, including invalidated sessions.
+        ```
+        @bot.on
+        async def reconnect(event):
+            if self.is_offline:
+                await bot.restart()
         ```
 
         Parameters
