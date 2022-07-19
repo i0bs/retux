@@ -1,9 +1,41 @@
 from enum import IntEnum, IntFlag
 from attrs import define, field
-from retux.client.resources.abc import Snowflake
+from retux.client.resources.abc import Snowflake, Object
 
 
 class ChannelType(IntEnum):
+    """
+    Represents the types of channels from Discord
+    
+    Constants
+    ---------
+    GUILD_TEXT = 0
+        A text channel within a server.
+    DM = 1
+        A direct message between users.
+    GUILD_VOICE = 2
+        A voice channel within a server.
+    GROUP_DM = 3
+        A direct message between multiple users.
+    GUILD_CATEGORY = 4
+        An organizational category that contains up to 50 channels.
+    GUILD_NEWS = 5
+        A channel that users can follow and crosspost into their own server.
+    GUILD_NEWS_THREAD = 10
+        A temporary sub-channel within a GUILD_NEWS channel.
+    GUILD_PUBLIC_THREAD = 11
+        A temporary sub-channel within a GUILD_TEXT channel.
+    GUILD_PRIVATE_THREAD = 12
+        A temporary sub-channel within a GUILD_TEXT channel. 
+    
+        Only viewable by those invited and those with the MANAGE_THREADS permission
+    GUILD_STAGE_VOICE = 13
+        A voice channel for hosting events with an audience.
+    GUILD_DIRECTORY = 14
+        The channel in a hub containing the listed servers.
+    GUILD_FORUM = 15
+        A channel that can only contain threads.
+    """
     GUILD_TEXT = 0
     """A text channel within a server."""
     DM = 1
@@ -35,6 +67,16 @@ class ChannelType(IntEnum):
 
 
 class VideoQualityMode(IntEnum):
+    """
+    Represents video quality modes from Discord
+    
+    Constants
+    ---------
+    AUTO = 1
+        Discord chooses the quality for optimal performance.
+    FULL = 2
+        720p video resolution (1280x720).
+    """
     AUTO = 1
     """Discord chooses the quality for optimal performance."""
     FULL = 2
@@ -42,6 +84,7 @@ class VideoQualityMode(IntEnum):
 
 
 class ChannelFlags(IntFlag):
+    """The bitwise values that represent channel flags from Discord"""
     PINNED = 1 << 1
     """
     This thread is pinned to the top of its parent channel.
@@ -51,41 +94,136 @@ class ChannelFlags(IntFlag):
 
 
 class MessageType(IntEnum):
-    # TODO: find and document all of these
+    """
+    Represnts message types from Discord
+
+    Constants
+    ---------
+    DEFAULT
+        A normal message.
+    RECIPIENT_ADD
+        Unknown
+    RECIPIENT_REMOVE
+        Unknown
+    CALL
+        An indicator for a new voice call in a DM.
+    CHANNEL_NAME_CHANGE
+        A notification message for name of a channel changing.
+    CHANNEL_ICON_CHANGE
+        A notification message for the icon of a DM changing.
+    CHANNEL_PINNED_MESSAGE
+        A notification message for a new pinned message.
+    USER_JOIN
+        A notification message about the name of a channel changing.
+    GUILD_BOOST
+        A notification message about a new server boost(s).
+    GUILD_BOOST_TIER_1
+        A notification message about a guild reaching level 1 boost perks.
+    GUILD_BOOST_TIER_2
+        A notification message about a guild reaching level 2 boost perks.
+    GUILD_BOOST_TIER_3
+        A notification message about a guild reaching level 3 boost perks.
+    CHANNEL_FOLLOW_ADD
+        A notification message about a new follower of a news channel.
+    GUILD_DISCOVERY_DISQUALIFIED
+        A notification message about a guild being disqualified for discovery.
+    GUILD_DISCOVERY_REQUALIFIED
+        A notification message about a guild being requalified for discovery.
+    GUILD_DISCOVERY_GRACE_PERIOD_INITIAL_WARNING
+        An intial warning for a discovery grace period.
+    GUILD_DISCOVERY_GRACE_PERIOD_FINAL_WARNING
+        A final warning for a discovery grace period.
+    THREAD_CREATED
+        A notification message for a new thread in a channel.
+    REPLY
+        A reply to a message.
+    CHAT_INPUT_COMMAND
+        A resulting message from a slash command being used.
+    THREAD_STARTER_MESSAGE
+        A starter message for a thread.
+    GUILD_INVITE_REMINDER
+        A reminder about a guild invite.
+    CONTEXT_MENU_COMMAND
+        A resulting message from a context menu command being used.
+    AUTO_MODERATION_ACTION
+        A message from AutoMod describing an action it took.
+    """
     DEFAULT = 0
+    """A normal message."""
     RECIPIENT_ADD = 1
     RECIPIENT_REMOVE = 2
     CALL = 3
+    """An indicator for a new voice call in a DM."""
     CHANNEL_NAME_CHANGE = 4
+    """A notification message for name of a channel changing."""
     CHANNEL_ICON_CHANGE = 5
+    """A notification message for the icon of a DM changing."""
     CHANNEL_PINNED_MESSAGE = 6
+    """A notification message for a new pinned message."""
     USER_JOIN = 7
+    """A notification message about the name of a channel changing."""
     GUILD_BOOST = 8
+    """A notification message about a new server boost(s)."""
     GUILD_BOOST_TIER_1 = 9
+    """A notification message about a guild reaching level 1 boost perks."""
     GUILD_BOOST_TIER_2 = 10
+    """A notification message about a guild reaching level 2 boost perks."""
     GUILD_BOOST_TIER_3 = 11
+    """A notification message about a guild reaching level 3 boost perks."""
     CHANNEL_FOLLOW_ADD = 12
+    """A notification message about a new follower of a news channel."""
     GUILD_DISCOVERY_DISQUALIFIED = 14
+    """A notification message about a guild being disqualified for discovery."""
     GUILD_DISCOVERY_REQUALIFIED = 15
+    """A notification message about a guild being requalified for discovery."""
     GUILD_DISCOVERY_GRACE_PERIOD_INITIAL_WARNING = 16
+    """An intial warning for a discovery grace period."""
     GUILD_DISCOVERY_GRACE_PERIOD_FINAL_WARNING = 17
+    """A final warning for a discovery grace period."""
     THREAD_CREATED = 18
+    """A notification message for a new thread in a channel."""
     REPLY = 19
+    """A reply to a message."""
     CHAT_INPUT_COMMAND = 20
+    """A resulting message from a slash command being used."""
     THREAD_STARTER_MESSAGE = 21
+    """A starter message for a thread."""
     GUILD_INVITE_REMINDER = 22
+    """A reminder about a guild invite."""
     CONTEXT_MENU_COMMAND = 23
+    """A resulting message from a context menu command being used."""
     AUTO_MODERATION_ACTION = 24
+    """A message from AutoMod describing an action it took."""
 
 
 class MessageActivityType(IntEnum):
+    """
+    Represents a message activity type from Discord.
+
+    Constants
+    ---------
+    JOIN
+        A join message activity.
+    SPECTATE
+        A spectate message activity.
+    LISTEN
+        A listen message activity.
+    JOIN_REQUEST
+        A join request message activity.
+    """
     JOIN = 1
+    """A join message activity."""
     SPECTATE = 2
+    """A spectate message activity."""
     LISTEN = 3
+    """A listen message activity."""
     JOIN_REQUEST = 5
+    """A join request message activity."""
 
 
 class MessageFlags(IntFlag):
+    """The bitwise values that represent message flags from Discord"""
+    """"""
     CROSSPOSTED = 1 << 0
     """This message has been published to subscribed channels."""
     IS_CROSSPOST = 1 << 1
