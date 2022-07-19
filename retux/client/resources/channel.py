@@ -107,7 +107,7 @@ class MessageFlags(IntFlag):
 
 
 @define()
-class Overwrite:
+class Overwrite(Object):
     """
     Represents a permission overwrite from Discord.
 
