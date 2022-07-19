@@ -136,7 +136,7 @@ class Overwrite:
     allow: str = field()
     """The bit set representing the overwrite's allowed permissions."""
     deny: str = field()
-    """he bit set representing the overwrite's denied permissions."""
+    """The bit set representing the overwrite's denied permissions."""
 
 
 @define()
