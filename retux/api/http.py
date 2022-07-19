@@ -221,7 +221,6 @@ class HTTPClient(HTTPProtocol):
                         )
 
                     json = resp.json()
-                    print(json)
                     logger.debug(f"{route.method} {route}: {resp.status_code}")
                     logger.debug(dumps(loads(json), indent=4, sort_keys=True))
 
