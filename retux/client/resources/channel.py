@@ -154,7 +154,7 @@ class MessageActivity:
 
     type: int | MessageActivityType = field(converter=MessageActivityType)
     """The type of message activity."""
-    party_id: str | Snowflake | None = field(default=None, converter=Snowflake)
+    party_id: str | Snowflake | None = field(converter=Snowflake, default=None)
     """The party_id from a rich presence event."""
 
 
