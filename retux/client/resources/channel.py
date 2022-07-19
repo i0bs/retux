@@ -10,31 +10,31 @@ class ChannelType(IntEnum):
     
     Constants
     ---------
-    GUILD_TEXT = 0
+    GUILD_TEXT
         A text channel within a server.
-    DM = 1
+    DM
         A direct message between users.
-    GUILD_VOICE = 2
+    GUILD_VOICE
         A voice channel within a server.
-    GROUP_DM = 3
+    GROUP_DM
         A direct message between multiple users.
-    GUILD_CATEGORY = 4
+    GUILD_CATEGORY
         An organizational category that contains up to 50 channels.
-    GUILD_NEWS = 5
+    GUILD_NEWS
         A channel that users can follow and crosspost into their own server.
-    GUILD_NEWS_THREAD = 10
+    GUILD_NEWS_THREAD
         A temporary sub-channel within a GUILD_NEWS channel.
-    GUILD_PUBLIC_THREAD = 11
+    GUILD_PUBLIC_THREAD
         A temporary sub-channel within a GUILD_TEXT channel.
-    GUILD_PRIVATE_THREAD = 12
+    GUILD_PRIVATE_THREAD
         A temporary sub-channel within a GUILD_TEXT channel. 
     
         Only viewable by those invited and those with the MANAGE_THREADS permission
-    GUILD_STAGE_VOICE = 13
+    GUILD_STAGE_VOICE
         A voice channel for hosting events with an audience.
-    GUILD_DIRECTORY = 14
+    GUILD_DIRECTORY
         The channel in a hub containing the listed servers.
-    GUILD_FORUM = 15
+    GUILD_FORUM
         A channel that can only contain threads.
     """
     GUILD_TEXT = 0
@@ -73,9 +73,9 @@ class VideoQualityMode(IntEnum):
     
     Constants
     ---------
-    AUTO = 1
+    AUTO
         Discord chooses the quality for optimal performance.
-    FULL = 2
+    FULL
         720p video resolution (1280x720).
     """
     AUTO = 1
