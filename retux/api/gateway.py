@@ -373,7 +373,7 @@ class GatewayClient(GatewayProtocol):
                 logger.info(
                     "Our Gateway connection has suddenly invalidated. Checking reconnection status."
                 )
-                await self._dispatch("INVALID_SESSION", InvalidSession, *(payload.data))
+                await self._dispatch("INVALID_SESSION", InvalidSession, payload.data)
 
                 if bool(payload.data):
                     logger.debug(

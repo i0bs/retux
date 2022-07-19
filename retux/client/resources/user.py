@@ -145,3 +145,8 @@ class User(Object):
     def tag(self) -> str:
         """The 4-digit tag of the user."""
         return self.discriminator
+
+    @property
+    def mention(self) -> str:
+        """The mentionable version of the user."""
+        return f"<@{self.id}>"
