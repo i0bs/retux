@@ -350,7 +350,7 @@ class Channel:
     """
     Default archive duration for clients in minutes.
     
-    Can be set to 60, 1440, 4320, 10080.
+    Can be set to `60`, `1440`, `4320`, `10080`.
     """
     permissions: str | None = field(default=None)
     """
