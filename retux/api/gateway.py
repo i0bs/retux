@@ -10,7 +10,7 @@ from cattrs import structure_attrs_fromdict
 from trio import open_nursery, sleep, Nursery
 from trio_websocket import ConnectionClosed, WebSocketConnection, open_websocket_url
 
-from .events.abc import _Event
+from .events.abc import _Event, _EventTable
 from .events.connection import HeartbeatAck, InvalidSession, Ready, Reconnect, Resumed
 
 from ..client.flags import Intents
@@ -385,8 +385,10 @@ class GatewayClient(GatewayProtocol):
                 await self._dispatch("RECONNECT", Reconnect)
                 await self._resume()
             case _GatewayOpCode.DISPATCH:
-                if payload.name != "RESUMED" and payload.name != "READY":
-                    await self._dispatch(payload.name, payload.data)
+                if payload.name not in ["RESUMED", "READY"]:
+                    resource = _EventTable.lookup(payload.name)
+                    print(resource)
+                    await self._dispatch(payload.name, resource, **payload.data)
         match payload.name:
             case "RESUMED":
                 logger.debug(
@@ -424,7 +426,7 @@ class GatewayClient(GatewayProtocol):
         logger.debug("Hooking the bot into the Gateway.")
         self._bots.append(bot)
 
-    async def _dispatch(self, name: str, data: dict | _Event, *args, **kwargs):
+    async def _dispatch(self, _name: str, data: dict | _Event | MISSING, *args, **kwargs):
         """
         Dispatches an event from the Gateway.
 
@@ -443,28 +445,28 @@ class GatewayClient(GatewayProtocol):
 
         Parameters
         ----------
-        name : `str`
+        _name : `str`
             The name of the event.
-        data : `dict`, `_Event`
+        data : `dict`, `_Event`, `MISSING`
             The supplied payload data from the event.
+
+            If a resource was not able to be found for
+            the event called for, `MISSING` will be given.
         """
-
-        # TODO: implement how events are built from a factory.
-
-        logger.debug(f"Dispatching {name}: {data if isinstance(data, dict) else kwargs}")
+        logger.debug(f"Dispatching {_name}: {data if isinstance(data, dict) else kwargs}")
 
         for bot in self._bots:
-            if isinstance(data, dict):
-                await bot._trigger(name.lower(), data)
+            if isinstance(data, dict) or isinstance(data, MISSING):
+                await bot._trigger(_name.lower(), data)
             else:
                 # FIXME: write a better sanitiser for internal values that
                 # may be passed to us by Discord.
                 # See important note: https://discord.com/developers/docs/topics/gateway#gateways
                 await bot._trigger(
-                    name.lower(),
+                    _name.lower(),
                     data(
-                        name.lower(),
-                        bot,
+                        _name.lower(),
+                        bot if "id" in kwargs else MISSING,
                         *args,
                         **{k: v for k, v in kwargs.items() if not k.startswith("_")},
                     ),
