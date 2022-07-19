@@ -78,12 +78,16 @@ class Application(Object):
         The name of the application.
     icon : `str`
         The hash for the application's icon.
+
+        This hash is pre-determined by the API and does not reflect
+        the URL path.
     description : `str`
         The description of the application.
     rpc_origins : `list[str]`, optional
         A list of rpc origin urls, if rpc is enabled.
     bot_public : `bool`
-        False if only application owner can join the application's bot to guilds.
+        False if only application owner can join the application's bot
+        to guilds.
     bot_require_code_grant : `bool`
         True if the application's bot has the oauth2 code grant flow enabled.
     terms_of_service_url : `str`, optional
@@ -91,15 +95,19 @@ class Application(Object):
     privacy_policy_url : `str`, optional
         The url for the application's privacy policy.
     summary : `str`
-        **Deprecated**. This is an empty string that will be removed in v11. Defaults to an empty string.
+        **Deprecated**. This is an empty string that will be removed in v11.
+        Defaults to an empty string.
     verify_key : `str`
-        The hex encoded key for verification in interactions and the gamesdk's getticket.
+        The hex encoded key for verification in interactions and the
+        gamesdk's getticket.
     guild_id : `Snowflake`, optional
         The ID of the guild if the application is a game sold on Discord.
     primary_sku_id : `Snowflake`, optional
-        The ID of the "game sku" if it exists and the application is a game sold on Discord.
+        The ID of the "game sku" if it exists and the application is a
+        game sold on Discord.
     slug : `str`, optional
-        The url slug that links to the application's store page if it is a game sold on Discord.
+        The url slug that links to the application's store page if it is a
+        game sold on Discord.
     cover_image : `str`, optional
         The hash for the default rich presence invite cover.
 
@@ -108,7 +116,8 @@ class Application(Object):
     flags : `ApplicationFlags`
         The public flags of the application.
     tags : `list[str]`, optional
-        A maximum of 5 tags describing the content and functionality of the application.
+        A maximum of 5 tags describing the content and functionality of the
+        application.
     install_params : `InstallParams`, optional
         Settings for the application's default in-app authorization link.
     custom_install_url : `str`, optional
@@ -121,9 +130,14 @@ class Application(Object):
     """The name of the application."""
     # TODO: consider making icon hash an Image object
     icon: str = field()
-    """The hash for the application's icon."""
+    """
+    The hash for the application's icon.
+
+    This hash is pre-determined by the API and does not reflect
+    the URL path.
+    """
     description: str = field()
-    """The hash for the application's icon."""
+    """The description of the application."""
     rpc_origins: list[str] | None = field(default=None)
     """A list of rpc origin urls, if rpc is enabled."""
     bot_public: bool = field()
