@@ -5,16 +5,16 @@ from sys import version_info
 from typing import Protocol
 
 from attrs import define, field
-from httpx import QueryParams, Response
-from httpx import __version__ as __http_version__
-from httpx import delete, get, post, put
-from trio import Event, sleep_until
+from httpx import AsyncClient, QueryParams, Response, __version__ as __http_version__
+from trio import Event, sleep
 
-from retux.api.error import HTTPException
+from .error import HTTPException
 
 from ..const import MISSING, NotNeeded, __api_url__, __repo_url__, __version__
 
 logger = getLogger(__name__)
+
+__all__ = ("_RouteMethod", "_Route", "_Limit", "HTTPClient")
 
 
 class _RouteMethod(Enum):
@@ -26,7 +26,7 @@ class _RouteMethod(Enum):
     DELETE = "DELETE"
 
 
-@define(repr=False, slots=False)
+@define(slots=False)
 class _Route:
     """
     Represents a route path to an API endpoint.
@@ -52,14 +52,14 @@ class _Route:
     guild_id: str = field(default=None)
     """The guild ID associated with this route. This is for route-based rate limits."""
 
-    def __repr__(self) -> str:
+    def __str__(self) -> str:
         # We'll be associating our route as just the base URL for the API
         # and the path given. We don't need information for the method unless
         # we're in need of asserting it upon execution via. request.
 
         # TODO: check to see if the method is truly needed or not.
 
-        return __api_url__.self.path
+        return __api_url__ + self.path
 
     def get_bucket(self, shared: NotNeeded[str] = MISSING) -> str:
         """
@@ -90,7 +90,7 @@ class _Route:
 class _Limit:
     """Represents a bucket that exists for a route."""
 
-    event: Event = field(default=Event)
+    event: Event = field(default=Event())
     """The asynchronous event associated to the bucket, used for blocking conditions."""
     reset_after: float = field(default=0.0)
     """The time remaining before the event may be reset. Defaults to `0.0`."""
@@ -129,11 +129,11 @@ class HTTPClient(HTTPProtocol):
     """The bot's token."""
     _headers: dict[str, str]
     """HTTP headers sent for authorisation purposes."""
-    _buckets: dict[_Route, str]
+    _buckets: dict[_Route, str] = {}
     """The buckets currently stored."""
-    _rate_limits: dict[str, _Limit]
+    _rate_limits: dict[str, _Limit] = {}
     """The rate limits currently stored."""
-    _global_rate_limit: _Limit
+    _global_rate_limit: _Limit = _Limit()
     """The global rate limit state.
 """
 
@@ -154,10 +154,30 @@ class HTTPClient(HTTPProtocol):
             f"Python/{version_info[0]}.{version_info[1]} "
             f"httpx/{__http_version__}",
         }
-        self._buckets = {}
-        self._rate_limits = {}
 
     async def request(self, route: _Route, payload: dict, retries: NotNeeded[int] = MISSING):
+        """
+        Makes a request to Discord's REST API.
+
+        Attributes
+        ----------
+        route : `_Route`
+            The route of the API endpoint.
+        payload : `dict`
+            The payload to send with the request. If you're making
+            a `GET` or `DELETE` call, this dictionary is automatically
+            converted into a query-parameter string.
+        retries : `int`, optional
+            The amount of retries to make if an HTTP request fails.
+            Defaults to `1`.
+
+        Returns
+        -------
+        `dict`
+            The JSON associated with the HTTP request.
+
+        Raises: `HTTPException`
+        """
 
         # TODO: Allow a reason field to be passed for audit log
         # purposes.
@@ -171,7 +191,7 @@ class HTTPClient(HTTPProtocol):
         elif self._global_rate_limit.reset_after == 0.0:
             self._global_rate_limit.event = Event()
 
-        bucket_path = route.get_bucket(self._buckets.get(route))
+        bucket_path = route.get_bucket()
         rate_limit = self._rate_limits.get(bucket_path)
         if rate_limit:
             if rate_limit.event.is_set() and rate_limit.reset_after != 0:
@@ -185,50 +205,50 @@ class HTTPClient(HTTPProtocol):
         else:
             self._rate_limits[bucket_path] = _Limit()
 
-        retry_attempts = 3 if retries is MISSING else retries
+        retry_attempts = 1 if retries is MISSING else retries
         for attempt in range(retry_attempts):
             try:
                 resp: Response
 
-                match route.method:
-                    case _RouteMethod.GET:
-                        resp = await get(route, params=QueryParams(**payload))
-                    case _RouteMethod.POST:
-                        resp = await post(route, json=payload)
-                    case _RouteMethod.PUT:
-                        resp = await put(route, json=payload)
-                    case _RouteMethod.DELETE:
-                        resp = await delete(route, params=QueryParams(**payload))
-
-                json = resp.json()
-                logger.debug(f"{route.method} {route}: {resp.status_code}")
-                logger.debug(dumps(loads(json), indent=4, sort_keys=True))
-
-                if isinstance(json, dict) and json.get("errors"):
-                    raise HTTPException(json, severity=INFO)
-                if resp.status_code == 429:
-                    reset_after = resp.headers.get("X-RateLimit-Reset-After", 0.0)
-                    if bool(resp.headers.get("X-RateLimit-Global")):
-                        logger.warning(
-                            f"A global rate limit has occured. Locking down future requests for {reset_after}s."
+                async with AsyncClient(headers=self._headers) as client:
+                    if route.method in (_RouteMethod.POST, _RouteMethod.PUT):
+                        resp = await client.request(route.method.value, str(route), json=payload)
+                    elif route.method in (_RouteMethod.GET, _RouteMethod.DELETE):
+                        resp = await client.request(
+                            route.method.value,
+                            str(route),
+                            params=QueryParams(**payload),
                         )
-                        self._global_rate_limit.reset_after = reset_after
-                        self._global_rate_limit.set()
-                    else:
-                        logger.warning(
-                            f"A route-based rate limit has occured. Locking down future requests for {reset_after}s."
-                        )
-                        rate_limit.reset_after = reset_after
-                        rate_limit.event.set()
-                if resp.headers.get("X-RateLimit-Remaining", 0) == 0:
-                    logger.warning(
-                        f"We've reached the maximum number of requests possible. Locking down future requests for {reset_after}s."
-                    )
-                    await sleep_until(reset_after)
 
-                return json
+                    json = resp.json()
+                    logger.debug(f"{route.method} {route}: {resp.status_code}")
+                    logger.debug(dumps(loads(json), indent=4, sort_keys=True))
+
+                    if isinstance(json, dict) and json.get("errors"):
+                        raise HTTPException(json, severity=INFO)
+                    if resp.status_code == 429:
+                        reset_after = resp.headers.get("X-RateLimit-Reset-After", 0.0)
+                        if bool(resp.headers.get("X-RateLimit-Global")):
+                            logger.warning(
+                                f"A global rate limit has occured. Locking down future requests for {reset_after}s."
+                            )
+                            self._global_rate_limit.reset_after = reset_after
+                            self._global_rate_limit.set()
+                        else:
+                            logger.warning(
+                                f"A route-based rate limit has occured. Locking down future requests for {reset_after}s."
+                            )
+                            rate_limit.reset_after = reset_after
+                            rate_limit.event.set()
+                    if resp.headers.get("X-RateLimit-Remaining", 0) == 0:
+                        logger.warning(
+                            f"We've reached the maximum number of requests possible. Locking down future requests for {reset_after}s."
+                        )
+                        await sleep(reset_after)
+
+                    return json
             except OSError as err:
-                if attempt < 2 and err.errno in {54, 10054}:
-                    await sleep_until(5)
+                if attempt <= 1 and err.errno in {54, 10054}:
+                    await sleep(5)
             except Exception as err:
                 logger.info(err)

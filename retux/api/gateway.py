@@ -10,7 +10,8 @@ from cattrs import structure_attrs_fromdict
 from trio import open_nursery, sleep, Nursery
 from trio_websocket import ConnectionClosed, WebSocketConnection, open_websocket_url
 
-from .factories.factory import Factory
+from .events.abc import _Event, _EventTable
+from .events.connection import HeartbeatAck, InvalidSession, Ready, Reconnect, Resumed
 
 from ..client.flags import Intents
 from ..client.resources.abc import Snowflake
@@ -283,6 +284,10 @@ class GatewayClient(GatewayProtocol):
             The payload to send.
         """
 
+        # TODO: implement the gateway rate limiting logic here.
+        # the theory of this is to "queue" dispatched informatoin
+        # from the Gateway when we enter a rate limit.
+
         try:
             json = dumps(asdict(payload))
             resp = await self._conn.send_message(json)  # noqa
@@ -336,7 +341,8 @@ class GatewayClient(GatewayProtocol):
             The payload being sent from the Gateway.
         """
         logger.debug(
-            f"Tracking payload: {payload.opcode}{'.' if payload.name is None else f' ({payload.name})'}"
+            f"Tracking payload: {payload.opcode}/{_GatewayOpCode(payload.opcode).name}."
+            f"{'' if payload.name is None else f' ({payload.name})'}"
         )
 
         match _GatewayOpCode(payload.opcode):
@@ -354,36 +360,48 @@ class GatewayClient(GatewayProtocol):
             case _GatewayOpCode.HEARTBEAT_ACK:
                 self._last_ack[1] = perf_counter()
                 logger.debug(f"The heartbeat was acknowledged. (took {self.latency}ms.)")
+                await self._dispatch("HEARTBEAT_ACK", HeartbeatAck, latency=self.latency)
                 self._last_ack[0] = perf_counter()
             case _GatewayOpCode.INVALID_SESSION:
                 logger.info(
-                    "Our Gateway connection has suddenly invalidated. Starting new connection."
+                    "Our Gateway connection has suddenly invalidated. Checking reconnection status."
                 )
-                self._meta.session_id = None
-                await self._conn.aclose()
-                await self.reconnect()
-            case _GatewayOpCode.RECONNECT:
-                logger.info("The Gateway has told us to reconnect.")
-                if payload.data:
-                    logger.info("Resuming last known connection.")
+                await self._dispatch("INVALID_SESSION", InvalidSession, *(payload.data))
+
+                if bool(payload.data):
+                    logger.debug(
+                        "The Gateway has told us to reconnect. Resuming last known connection."
+                    )
                     await self._resume()
                 else:
+                    logger.debug(
+                        "The given connection cannot be reconnected to. Starting new connection."
+                    )
+                    self._meta.session_id = None
                     await self._conn.aclose()
                     await self.reconnect()
+            case _GatewayOpCode.RECONNECT:
+                logger.info("The Gateway has told us to reconnect. Resuming last known connection.")
+                await self._dispatch("RECONNECT", Reconnect)
+                await self._resume()
             case _GatewayOpCode.DISPATCH:
-                logger.debug(f"Dispatching {payload.name}")
-                await self._dispatch(payload.name, payload.data)
+                if payload.name not in ["RESUMED", "READY"]:
+                    resource = _EventTable.lookup(payload.name)
+                    print(resource)
+                    await self._dispatch(payload.name, resource, **payload.data)
         match payload.name:
             case "RESUMED":
                 logger.debug(
                     f"The connection was resumed. (session: {self._meta.session_id}, sequence: {self._meta.seq}"
                 )
+                await self._dispatch("RESUMED", Resumed, **payload.data)
             case "READY":
                 self._meta.session_id = payload.data["session_id"]
                 self._meta.seq = payload.sequence
                 logger.debug(
                     f"The Gateway has declared a ready connection. (session: {self._meta.session_id}, sequence: {self._meta.seq}"
                 )
+                await self._dispatch("READY", Ready, **payload.data)
 
     async def _hook(self, bot: "Bot"):  # noqa
         """
@@ -408,7 +426,7 @@ class GatewayClient(GatewayProtocol):
         logger.debug("Hooking the bot into the Gateway.")
         self._bots.append(bot)
 
-    async def _dispatch(self, name: str, data: dict):
+    async def _dispatch(self, _name: str, data: dict | _Event | MISSING, *args, **kwargs):
         """
         Dispatches an event from the Gateway.
 
@@ -418,27 +436,41 @@ class GatewayClient(GatewayProtocol):
         information regarding an event non-relevant to
         the connection.
 
+        The `*args` and `**kwargs` signature is for data sent
+        in the form of an `_Event`. These are only to be used
+        to fill in the actual data of the Gateway event, whereas
+        `data` is purely the dataclass.
+
         ---
 
         Parameters
         ----------
-        name : `str`
+        _name : `str`
             The name of the event.
-        data : `dict`
+        data : `dict`, `_Event`, `MISSING`
             The supplied payload data from the event.
+
+            If a resource was not able to be found for
+            the event called for, `MISSING` will be given.
         """
-        try:
-            resource = Factory.define(name, data)
-        except AttributeError:
-            resource = MISSING
-            logger.info(f"The Gateway sent us {name} with no data class found.")
+        logger.debug(f"Dispatching {_name}: {data if isinstance(data, dict) else kwargs}")
 
         for bot in self._bots:
-            await bot._trigger(name.lower(), resource)
-
-        # TODO: implement the gateway rate limiting logic here.
-        # the theory of this is to "queue" dispatched informatoin
-        # from the Gateway when we enter a rate limit.
+            if isinstance(data, dict) or isinstance(data, MISSING):
+                await bot._trigger(_name.lower(), data)
+            else:
+                # FIXME: write a better sanitiser for internal values that
+                # may be passed to us by Discord.
+                # See important note: https://discord.com/developers/docs/topics/gateway#gateways
+                await bot._trigger(
+                    _name.lower(),
+                    data(
+                        _name.lower(),
+                        bot if "id" in kwargs else MISSING,
+                        *args,
+                        **{k: v for k, v in kwargs.items() if not k.startswith("_")},
+                    ),
+                )
 
     async def _identify(self):
         """Sends an identification payload to the Gateway."""

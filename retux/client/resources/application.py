@@ -1,7 +1,9 @@
 from attrs import define, field
 from enum import IntFlag
 
-from .abc import Snowflake
+from .abc import Object, Partial, Snowflake
+
+__all__ = ("PartialApplication", "Application", "ApplicationFlags", "InstallParams")
 
 
 class ApplicationFlags(IntFlag):
@@ -25,10 +27,10 @@ class ApplicationFlags(IntFlag):
     """Intent required for bots in under 100 servers in order to receive message content, can be found in bot settings."""
 
 
-@define(kwargs_only=True)
-class InstallParams:
+@define(kw_only=True)
+class InstallParams(Object):
     """
-    Represents the install parameters of an Application from Discord.
+    Represents the install parameters of an application from Discord.
 
     Attributes
     ----------
@@ -44,10 +46,29 @@ class InstallParams:
     """The permissions the bot requests be in the bot role."""
 
 
-@define(kw_only=True)
-class Application:
+@define()
+class PartialApplication(Partial, Object):
     """
-    Represents an Application from Discord.
+    Represents a partial application from Discord.
+
+    Attributes
+    ----------
+    id : `Snowflake`
+        The ID of the application.
+    flags : `ApplicationFlags`
+        The public flags of the application.
+    """
+
+    id: str | Snowflake = field(converter=Snowflake)
+    """The ID of the application."""
+    flags: int | ApplicationFlags = field(converter=ApplicationFlags, default=0)
+    """The public flags of the application. Defaults to `0`."""
+
+
+@define(kw_only=True)
+class Application(Object):
+    """
+    Represents an application from Discord.
 
     Attributes
     ----------
@@ -69,14 +90,10 @@ class Application:
         The url for the application's terms of service.
     privacy_policy_url : `str`, optional
         The url for the application's privacy policy.
-    owner : `User`, optional
-        A partial user object representing the application owner.
     summary : `str`
         **Deprecated**. This is an empty string that will be removed in v11. Defaults to an empty string.
     verify_key : `str`
         The hex encoded key for verification in interactions and the gamesdk's getticket.
-    team : `Team`
-        A team object representing the team that the application belongs to.
     guild_id : `Snowflake`, optional
         The ID of the guild if the application is a game sold on Discord.
     primary_sku_id : `Snowflake`, optional
@@ -88,7 +105,7 @@ class Application:
 
         This hash is pre-determined by the API and does not reflect
         the URL path.
-    flags : `ApplicationFlags`, optional
+    flags : `ApplicationFlags`
         The public flags of the application.
     tags : `list[str]`, optional
         A maximum of 5 tags describing the content and functionality of the application.
@@ -98,18 +115,16 @@ class Application:
         The application's default custom authorization link.
     """
 
-    # TODO: consider making icon hash a File object
-    # TODO: implement User object
-    # TODO: implement Team object
     id: str | Snowflake = field(converter=Snowflake)
     """The ID of the application."""
     name: str = field()
     """The name of the application."""
+    # TODO: consider making icon hash an Image object
     icon: str = field()
     """The hash for the application's icon."""
     description: str = field()
     """The hash for the application's icon."""
-    rpc_origins: list[str] | None = field(converter=list, default=None)
+    rpc_origins: list[str] | None = field(default=None)
     """A list of rpc origin urls, if rpc is enabled."""
     bot_public: bool = field()
     """False if only application owner can join the application's bot to guilds."""
@@ -119,17 +134,19 @@ class Application:
     """The url for the application's terms of service."""
     privacy_policy_url: str | None = field(default=None)
     """The url for the application's privacy policy."""
-    owner: dict | User | None = field(default=None, converter=User)  # noqa
-    """A partial user object representing the application owner."""
+    # TODO: implement User object
+    # owner: dict | User | None = field(converter=User, default=None)  # noqa
+    # """A partial user object representing the application's owner."""
     summary: str = field()
     """**Deprecated**. This is an empty string that will be removed in v11. Defaults to `""`"""
     verify_key: str = field()
     """The hex encoded key for verification in interactions and the gamesdk's getticket"""
-    team: dict | Team = field(converter=Team)  # noqa
-    """A team object representing the team that the application belongs to."""
-    guild_id: str | Snowflake | None = field(default=None, converter=Snowflake)
+    # TODO: implement Team object
+    # team: dict | Team = field(converter=Team)  # noqa
+    # """A team object representing the team that the application belongs to."""
+    guild_id: str | Snowflake | None = field(converter=Snowflake, default=None)
     """The ID of the guild if the application is a sold game."""
-    primary_sku_id: str | Snowflake | None = field(default=None, converter=Snowflake)
+    primary_sku_id: str | Snowflake | None = field(converter=Snowflake, default=None)
     """The ID of the "game sku" if it exists and the application is a game sold on Discord."""
     slug: str | None = field(default=None)
     """IThe url slug that links to the application's store page if it is a game sold on Discord."""
@@ -140,11 +157,11 @@ class Application:
     This hash is pre-determined by the API and does not reflect
     the URL path.
     """
-    flags: int | ApplicationFlags | None = field(default=None, converter=ApplicationFlags)
+    flags: int | ApplicationFlags = field(converter=ApplicationFlags)
     """The public flags of the application."""
-    tags: list[str] | None = field(converter=list, default=None)
+    tags: list[str] | None = field(default=None)
     """A maximum of 5 tags describing the content and functionality of the application."""
-    install_params: dict | InstallParams | None = field(default=None, converter=InstallParams)
+    install_params: dict | InstallParams | None = field(converter=InstallParams, default=None)
     """The settings for the application's default in-app authorization link."""
     custom_install_url: str | None = field(default=None)
     """The application's default custom authorization link."""

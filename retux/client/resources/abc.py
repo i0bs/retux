@@ -3,15 +3,7 @@ from typing import Union
 
 from attrs import define, field
 
-from ...const import MISSING
-
-
-@define(slots=False)
-class Event:
-    """An abstract base class for representing Gateway events."""
-
-    name: str = field()
-    bot: "Bot" | MISSING = field(default=MISSING)  # noqa
+__all__ = ("Snowflake", "Partial", "Object", "Component")
 
 
 @define(repr=False, eq=False)
@@ -29,9 +21,13 @@ class Snowflake:
 
     Attributes
     ----------
-    _snowflake : `str`, `int`
-        The snowflake itself. This should never need to be called upon directly.
-        Please use the representation of the class itself.
+    _snowflake : `str`, optional
+        The internally stored snowflake. Snowflakes are always in string-form.
+
+        The snowflake may only be `None` in the event that a given
+        field in a resource does not supply it. This should not be always
+        taken for granted as having a value. Please use the representation
+        of the class itself.
 
     Methods
     -------
@@ -51,11 +47,18 @@ class Snowflake:
         generated on this snowflake, e.g. a resource.
     """
 
-    _snowflake: str | int = field(converter=str)
-    """The internally stored snowflake. Snowflakes are always in a string-form."""
+    _snowflake: str | int | None = field(converter=str)
+    """
+    The internally stored snowflake. Snowflakes are always in string-form.
 
-    def __repr__(self) -> str:
-        return str(self._snowflake)
+    The snowflake may only be `None` in the event that a given
+    field in a resource does not supply it. This should not be always
+    taken for granted as having a value. Please use the representation
+    of the class itself.
+    """
+
+    def __repr__(self) -> str | None:
+        return self._snowflake
 
     def __eq__(self, other: Union[str, int, "Snowflake"]) -> bool:
         if type(other) == int:
@@ -95,6 +98,37 @@ class Snowflake:
         return int(self._snowflake) & 0xFFF
 
 
+@define(init=False, slots=False)
+class Partial:
+    """
+    Represents partial information to a resource from Discord.
+
+    ---
+
+    Sometimes, Discord will provide back to the client what is
+    known as a "partial object." These objects are semantically
+    categorised by their resource, but in cases do not carry
+    the full set of information required for them. The `Partial`
+    class lives to serve as a way to better typehint this incomplete
+    data.
+    """
+
+
+@define(kw_only=True)
+class Object:
+    """
+    Represents the base object form of a resource from Discord.
+
+    Attributes
+    ----------
+    id : `Snowflake`
+        The ID associated to the object.
+    """
+
+    id: str | Snowflake = field(converter=Snowflake)
+    """The ID associated to the object."""
+
+
 @define()
 class Component:
     """
@@ -106,3 +140,5 @@ class Component:
     however, only `Button` makes them optional. A custom ID is
     a developer-defined ID in-between 1-100 characters.
     """
+
+    custom_id: str | None = field(default=None)
