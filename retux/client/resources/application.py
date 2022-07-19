@@ -69,14 +69,10 @@ class Application:
         The url for the application's terms of service.
     privacy_policy_url : `str`, optional
         The url for the application's privacy policy.
-    owner : `User`, optional
-        A partial user object representing the application owner.
     summary : `str`
         **Deprecated**. This is an empty string that will be removed in v11. Defaults to an empty string.
     verify_key : `str`
         The hex encoded key for verification in interactions and the gamesdk's getticket.
-    team : `Team`
-        A team object representing the team that the application belongs to.
     guild_id : `Snowflake`, optional
         The ID of the guild if the application is a game sold on Discord.
     primary_sku_id : `Snowflake`, optional
@@ -98,13 +94,11 @@ class Application:
         The application's default custom authorization link.
     """
 
-    # TODO: consider making icon hash a File object
-    # TODO: implement User object
-    # TODO: implement Team object
     id: str | Snowflake = field(converter=Snowflake)
     """The ID of the application."""
     name: str = field()
     """The name of the application."""
+    # TODO: consider making icon hash an Image object
     icon: str = field()
     """The hash for the application's icon."""
     description: str = field()
@@ -119,14 +113,16 @@ class Application:
     """The url for the application's terms of service."""
     privacy_policy_url: str | None = field(default=None)
     """The url for the application's privacy policy."""
-    owner: dict | User | None = field(default=None, converter=User)  # noqa
-    """A partial user object representing the application owner."""
+    # TODO: implement User object
+    # owner: dict | User | None = field(default=None, converter=User)  # noqa
+    # """A partial user object representing the application owner."""
     summary: str = field()
     """**Deprecated**. This is an empty string that will be removed in v11. Defaults to `""`"""
     verify_key: str = field()
     """The hex encoded key for verification in interactions and the gamesdk's getticket"""
-    team: dict | Team = field(converter=Team)  # noqa
-    """A team object representing the team that the application belongs to."""
+    # TODO: implement Team object
+    # team: dict | Team = field(converter=Team)  # noqa
+    # """A team object representing the team that the application belongs to."""
     guild_id: str | Snowflake | None = field(default=None, converter=Snowflake)
     """The ID of the guild if the application is a sold game."""
     primary_sku_id: str | Snowflake | None = field(default=None, converter=Snowflake)

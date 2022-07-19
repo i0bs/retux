@@ -3,16 +3,6 @@ from typing import Union
 
 from attrs import define, field
 
-from ...const import MISSING
-
-
-@define(slots=False)
-class Event:
-    """An abstract base class for representing Gateway events."""
-
-    name: str = field()
-    bot: "Bot" | MISSING = field(default=MISSING)  # noqa
-
 
 @define(repr=False, eq=False)
 class Snowflake:
@@ -95,6 +85,40 @@ class Snowflake:
         return int(self._snowflake) & 0xFFF
 
 
+@define(init=False, slots=False, kw_only=True)
+class Partial:
+    """
+    Represents partial information to a resource from Discord.
+
+    ---
+
+    Sometimes, Discord will provide back to the client what is
+    known as a "partial object." These objects are semantically
+    categorised by their resource, but in cases do not carry
+    the full set of information required for them. The `Partial`
+    class lives to serve as a way to better typehint this incomplete
+    data.
+    """
+
+    def __init__(self, **kwargs):
+        self.__dict__.update(**kwargs)
+
+
+@define(kw_only=True)
+class Object:
+    """
+    Represents the base object form of a resource from Discord.
+
+    Attributes
+    ----------
+    id : `Snowflake`
+        The ID associated to the object.
+    """
+
+    id: str | Snowflake = field(converter=Snowflake)
+    """The ID associated to the object."""
+
+
 @define()
 class Component:
     """
@@ -106,3 +130,5 @@ class Component:
     however, only `Button` makes them optional. A custom ID is
     a developer-defined ID in-between 1-100 characters.
     """
+
+    custom_id: str | None = field(default=None)
