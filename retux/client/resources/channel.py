@@ -354,7 +354,7 @@ class Channel:
     """
     permissions: str | None = field(default=None)
     """
-    Computed permissions for the invoking user in the channel, including overwrites.
+    The computed permissions for the invoking user in the channel, including any overwrites.
         
     Only included when part of the resolved data received on a slash command interaction.
     """
