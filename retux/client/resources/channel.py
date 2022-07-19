@@ -474,13 +474,13 @@ class Channel(Object):
     """"
     The approximated amount of messages in a thread.
 
-    Stops counting at 50.
+    Stops counting at `50`.
     """
     member_count: int | None = field(default=None)
     """
     The approximated amount of users in a thread.
 
-    Stops counting at 50.
+    Stops counting at `50`.
     """
     thread_metadata: dict | ThreadMetadata | None = field(
         converter=ThreadMetadata, default=None
