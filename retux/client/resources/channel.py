@@ -273,7 +273,7 @@ class Channel:
     position: int | None = field(default=None)
     """Sorted position of the channel."""
     permission_overwrites: list[dict] | list[Overwrite] | None = field(
-        default=None, converter=dict
+        converter=list, default=None
     )
     """Explicit permission overwrites for members and roles."""
     name: str | None = field(default=None)
