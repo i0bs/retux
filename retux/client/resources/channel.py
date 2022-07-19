@@ -378,11 +378,11 @@ class Channel(Object):
     message_count : `int`, optional
         An approximate count of messages in a thread.
 
-        Stops counting at 50.
+        Stops counting at `50`.
     member_count : `int`, optional
         An approximate count of messages in a thread.
 
-        Stops counting at 50.
+        Stops counting at `50`.
     thread_metadata : `ThreadMetadata`, optional
         Thread-specific fields not needed by other channels.
     member : `ThreadMember`, optional
