@@ -344,7 +344,7 @@ class Channel:
         converter=ThreadMetadata, default=None
     )
     """Thread-specific fields not needed by other channels."""
-    member: ThreadMember | None = field(default=None)
+    member: dict | ThreadMember | None = field(converter=ThreadMember, default=None)
     """
     The thread member representation of the user if they have joined the thread.
         
