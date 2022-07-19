@@ -348,7 +348,7 @@ class Channel:
     """
     default_auto_archive_duration: int | None = field(default=None)
     """
-    Default archive duration for clients in minutes.
+    The default archive duration for threads in minutes.
     
     Can be set to `60`, `1440`, `4320`, `10080`.
     """
