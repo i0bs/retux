@@ -189,7 +189,7 @@ class Channel:
     type : `ChannelType`
         The type of the channel.
     guild_id : `Snowflake`, optional
-        The ID of the guild. Optional because it can be missing in gateway events.
+        The ID of the guild. This is nullable due to some Gateway events lacking the data for the ID.
     position : `int`, optional
         Sorted position of the channel.
     permission_overwrites : `list[Overwrite]`, optional
