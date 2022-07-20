@@ -1,8 +1,8 @@
 from attrs import define, field
 
-
 from ...const import MISSING
 
+from .misc import TypingStart
 from .message import _MessageEvents
 from .guild import _GuildEvents
 
@@ -49,3 +49,5 @@ class _EventTable(_MessageEvents, _GuildEvents):
             return messages
         elif guilds := _GuildEvents.lookup(name):
             return guilds
+        if name == "TYPING_START":
+            return TypingStart

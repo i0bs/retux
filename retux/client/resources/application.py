@@ -1,6 +1,8 @@
 from attrs import define, field
 from enum import IntFlag
 
+from ...utils.converters import optional_c
+
 from .abc import Object, Partial, Snowflake
 
 __all__ = ("PartialApplication", "Application", "ApplicationFlags", "InstallParams")
@@ -49,7 +51,7 @@ class InstallParams(Object):
     """The permissions the bot requests be in the bot role."""
 
 
-@define()
+@define(kw_only=True)
 class PartialApplication(Partial, Object):
     """
     Represents a partial application from Discord.
@@ -161,9 +163,9 @@ class Application(Object):
     # TODO: implement Team object
     # team: dict | Team = field(converter=Team)  # noqa
     # """A team object representing the team that the application belongs to."""
-    guild_id: str | Snowflake | None = field(converter=Snowflake, default=None)
+    guild_id: str | Snowflake | None = field(converter=optional_c(Snowflake), default=None)
     """The ID of the guild if the application is a sold game."""
-    primary_sku_id: str | Snowflake | None = field(converter=Snowflake, default=None)
+    primary_sku_id: str | Snowflake | None = field(converter=optional_c(Snowflake), default=None)
     """The ID of the "game sku" if it exists and the application is a game sold on Discord."""
     slug: str | None = field(default=None)
     """IThe url slug that links to the application's store page if it is a game sold on Discord."""
@@ -178,7 +180,9 @@ class Application(Object):
     """The public flags of the application."""
     tags: list[str] | None = field(default=None)
     """A maximum of 5 tags describing the content and functionality of the application."""
-    install_params: dict | InstallParams | None = field(converter=InstallParams, default=None)
+    install_params: dict | InstallParams | None = field(
+        converter=optional_c(InstallParams), default=None
+    )
     """The settings for the application's default in-app authorization link."""
     custom_install_url: str | None = field(default=None)
     """The application's default custom authorization link."""

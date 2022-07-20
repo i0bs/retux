@@ -11,7 +11,7 @@ class _MessageEvents:
     def lookup(cls, name: str) -> dict | MISSING:
         match name:
             case "MESSAGE_CREATE":
-                return {"hello": "world"}
+                ...
             case "MESSAGE_UPDATE":
                 ...
             case "MESSAGE_DELETE":

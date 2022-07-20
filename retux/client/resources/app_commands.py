@@ -4,6 +4,8 @@ from attrs import define, field
 
 from .abc import Object, Snowflake
 
+from ...utils.converters import list_c, optional_c
+
 __all__ = ("ApplicationCommand", "ApplicationCommandOption", "ApplicationCommandOptionChoice")
 
 
@@ -102,7 +104,7 @@ class ApplicationCommandOption:
     """
 
     type: int | ApplicationCommandOptionType = field(
-        converter=ApplicationCommandOptionType, default=None
+        converter=optional_c(ApplicationCommandOptionType), default=None
     )
     """The type of application command option."""
     name: str = field()
@@ -115,14 +117,18 @@ class ApplicationCommandOption:
     """The localised dictionary of descriptions for the application command option, if present."""
     required: bool | None = field(default=None)
     """Whether the application command option is required to be entered or not."""
-    choices: list[ApplicationCommandOptionChoice] | None = field(default=None)
+    choices: list[ApplicationCommandOptionChoice] | None = field(
+        converter=optional_c(list_c(ApplicationCommandOptionChoice)), default=None
+    )
     """
     Pre-filled selection choices of an application command option.
 
     The choices must be from a `STRING`, `INTEGER` or `NUMBER` type.
     An application command option can have a maximum of 25 choices.
     """
-    options: list[dict] | list["ApplicationCommandOption"] | None = field(default=None)
+    options: list[dict] | list["ApplicationCommandOption"] | None = field(
+        converter=optional_c(list_c("ApplicationCommandOption")), default=None
+    )
     """
     The options of the application command, if present.
     Options are only present on `CHAT_INPUT` command types.
@@ -204,7 +210,7 @@ class ApplicationCommand(Object):
     """The type of application command."""
     application_id: str | Snowflake = field(converter=Snowflake)
     """The ID of the application the command is under."""
-    guild_id: str | Snowflake | None = field(converter=Snowflake, default=None)
+    guild_id: str | Snowflake | None = field(converter=optional_c(Snowflake), default=None)
     """The ID of the guild the command is under, if present."""
     name: str = field()
     """The name of the command in-between 1-32 characters."""
@@ -218,7 +224,7 @@ class ApplicationCommand(Object):
     description_localizations: dict[str, str] | None = field(default=None)
     """The localised dictionary of descriptions for the application command, if present."""
     options: list[dict] | list[ApplicationCommandOption] | None = field(
-        converter=list, default=None
+        converter=optional_c(list_c(ApplicationCommandOption)), default=None
     )
     """
     The options of the application command, if present.

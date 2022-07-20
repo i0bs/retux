@@ -4,6 +4,8 @@ from attrs import define, field
 
 from .abc import Object, Partial, Snowflake
 
+from ...utils.converters import optional_c, list_c
+
 
 @define(kw_only=True)
 class WelcomeScreenChannel:
@@ -60,7 +62,7 @@ class WelcomeScreen:
     description: str | None = field(default=None)
     """The description of the guild in the welcome screen."""
     welcome_channels: list[dict] | list[WelcomeScreenChannel] | None = field(
-        converter=WelcomeScreenChannel, default=None
+        converter=optional_c(list_c(WelcomeScreenChannel)), default=None
     )
     """
     The channels show in the welcome screen. A maximum
@@ -328,7 +330,7 @@ class Guild(Object):
     """Whether the guild has the server boosting bar enabled or not."""
     owner: bool = field(default=False)
     """Whether the user who invoked the guild is the owner or not."""
-    afk_channel_id: str | Snowflake | None = field(converter=Snowflake, default=None)
+    afk_channel_id: str | Snowflake | None = field(converter=optional_c(Snowflake), default=None)
     """The ID of the AFK channel inside the guild, if present."""
     icon_hash: str | None = field(default=None)
     """
@@ -352,17 +354,17 @@ class Guild(Object):
     """
     widget_enabled: bool = field(default=False)
     """Whether the server has its widget enabled or not."""
-    widget_channel_id: str | Snowflake | None = field(converter=Snowflake, default=None)
+    widget_channel_id: str | Snowflake | None = field(converter=optional_c(Snowflake), default=None)
     """The ID of the channel which the widget targets, if present."""
     # TODO: implement Role object.
     # roles: list[dict] | list[Role] = field(converter=Role, default=None)
     # TODO: implement Emoji object.
     # emojis: list[dict] | list[Emoji] | None = field(converter=Emoji, default=None)
-    application_id: str | Snowflake | None = field(converter=Snowflake, default=None)
+    application_id: str | Snowflake | None = field(converter=optional_c(Snowflake), default=None)
     """The ID of the application for the guild if created via. a bot."""
-    system_channel_id: str | Snowflake | None = field(converter=Snowflake, default=None)
+    system_channel_id: str | Snowflake | None = field(converter=optional_c(Snowflake), default=None)
     """The ID of the system welcome messages channel, if present."""
-    rules_channel_id: str | Snowflake | None = field(converter=Snowflake, default=None)
+    rules_channel_id: str | Snowflake | None = field(converter=optional_c(Snowflake), default=None)
     """The ID of the rules channel, if presently determined as a Community server."""
     max_presences: int | None = field(default=None)
     """
@@ -380,7 +382,9 @@ class Guild(Object):
     """The banner of the guild, if present."""
     premium_subscription_count: int | None = field(default=None)
     """The approximated count of boosts the guild has."""
-    public_updates_channel_id: str | Snowflake | None = field(converter=Snowflake, default=None)
+    public_updates_channel_id: str | Snowflake | None = field(
+        converter=optional_c(Snowflake), default=None
+    )
     """The community moderation-only ID of the channel in the guild, if present."""
     max_video_channel_users: int = field(default=25)
     """
@@ -391,7 +395,9 @@ class Guild(Object):
     """The approximated member count of the guild."""
     approximate_presence_count: int | None = field(default=None)
     """The approxiated amount of presences in the guild."""
-    welcome_screen: dict | WelcomeScreen | None = field(converter=WelcomeScreen, default=None)
+    welcome_screen: dict | WelcomeScreen | None = field(
+        converter=optional_c(WelcomeScreen), default=None
+    )
     """The welcome screen of the guild, if present."""
     # TODO: implement Sticker object.
     # stickers: list[dict] | list[Sticker] | None = field(converter=Sticker, default=None)

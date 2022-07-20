@@ -2,6 +2,8 @@ from enum import IntEnum
 
 from attrs import define, field
 
+from ...utils.converters import list_c
+
 from .abc import Component
 
 __all__ = (
@@ -66,7 +68,7 @@ class ActionRow(Component):
 
     type: int | ComponentType = field(converter=ComponentType, default=ComponentType.ACTION_ROW)
     """The type of component, as `ComponentType.ACTION_ROW`."""
-    components: list[Component] = field(default=None)
+    components: list[Component] = field(converter=list_c(Component))
     """The components stored in the action row."""
 
 
@@ -233,7 +235,7 @@ class SelectMenu(Component):
     """The type of component, as `ComponentType.SELECT_MENU`."""
     custom_id: str = field()
     """A customisable identifiable descriptor for the select menu."""
-    options: list[SelectOption] = field()
+    options: list[SelectOption] = field(converter=list_c(SelectOption))
     """The options of the select menu."""
     placeholder: str | None = field(default=None)
     """The placeholder text of the select menu, if present."""
@@ -345,5 +347,5 @@ class Modal(Component):
     """The title of the modal."""
     custom_id: str = field()
     """A customisable identifiable descriptor for the modal."""
-    components: list[TextInput] = field()
+    components: list[TextInput] = field(converter=list_c(TextInput))
     """The components stored in the modal."""

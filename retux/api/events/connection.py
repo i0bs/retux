@@ -37,7 +37,7 @@ class Ready(_Event):
         The ID of the bot's Gateway connection session, used for reconnection.
     shard : `list[int]`, optional
         The shards of the Gateway connection, if present.
-    application : `Partial`
+    application : `PartialApplication`
         The application form of the bot. Contains only `id` and `flags`.
 
     Methods
