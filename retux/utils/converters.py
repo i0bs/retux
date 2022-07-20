@@ -58,6 +58,7 @@ def list_c(func: Any) -> list[Any]:
     """
 
     def inner(val):
-        return [func(_) for _ in val]
+        if val is not None:
+            return [func(_) for _ in val]
 
     return inner
