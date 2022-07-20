@@ -4,4 +4,5 @@ from .components import *  # noqa
 from .user import *  # noqa
 
 # Resource modules to be added when all dependencies are added as well:
-# from .application
+# from .application import * # noqa
+# from .channel import * # noqa
