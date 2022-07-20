@@ -224,7 +224,6 @@ class MessageActivityType(IntEnum):
 
 class MessageFlags(IntFlag):
     """The bitwise values that represent message flags from Discord"""
-    """"""
     CROSSPOSTED = 1 << 0
     """This message has been published to subscribed channels."""
     IS_CROSSPOST = 1 << 1
@@ -236,11 +235,11 @@ class MessageFlags(IntFlag):
     URGENT = 1 << 4
     """This message came from the urgent message system."""
     HAS_THREAD = 1 << 5
-    """This message has an associated thread, with the same id as the message."""
+    """This message has an associated thread, with the same ID as the message."""
     EPHEMERAL = 1 << 6
-    """This message is only visible to the user who invoked the Interaction."""
+    """This message is only visible to the user who invoked the interaction."""
     LOADING = 1 << 7
-    """This message is an Interaction Response showint that the bot is "thinking"."""
+    """This message is an interaction response showing that the bot is "thinking"."""
     FAILED_TO_MENTION_SOME_ROLES_IN_THREAD = 1 << 8
     """This message failed to mention some roles and add their members to the thread."""
 
@@ -253,7 +252,7 @@ class Overwrite(Object):
     Attributes
     ----------
     id : `Snowflake`
-        The ID of the Role or user.
+        The ID of the role or user.
     type : `int`
         The type of overwrite.
 
@@ -265,7 +264,7 @@ class Overwrite(Object):
     """
 
     id: str | Snowflake = field(converter=Snowflake)
-    """The ID of the Role or user."""
+    """The ID of the role or user."""
     type: int = field()
     """
     The type of overwrite.
@@ -288,13 +287,13 @@ class MessageActivity:
     type : `int`
         The type of message activity.
     party_id : `Snowflake`, optional
-        The party_id from a rich presence event.
+        The ID of a party from a rich presence event.
     """
 
     type: int | MessageActivityType = field(converter=MessageActivityType)
     """The type of message activity."""
     party_id: str | Snowflake | None = field(converter=Snowflake, default=None)
-    """The party_id from a rich presence event."""
+    """The ID of a party from a rich presence event."""
 
 
 @define()
