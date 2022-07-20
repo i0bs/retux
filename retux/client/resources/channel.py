@@ -3,11 +3,24 @@ from attrs import define, field
 from retux.client.resources.abc import Snowflake, Object
 from retux.client.resources.user import User
 
+__all__ = (
+    "Channel",
+    "FollowedChannel",
+    "MessageActivity",
+    "ChannelType",
+    "ChannelFlags",
+    "MessageType",
+    "MessageActivityType",
+    "MessageFlags",
+    "VideoQualityMode",
+    "Overwrite",
+)
+
 
 class ChannelType(IntEnum):
     """
     Represents the types of channels from Discord
-    
+
     Constants
     ---------
     GUILD_TEXT
@@ -27,8 +40,8 @@ class ChannelType(IntEnum):
     GUILD_PUBLIC_THREAD
         A temporary sub-channel within a GUILD_TEXT channel.
     GUILD_PRIVATE_THREAD
-        A temporary sub-channel within a GUILD_TEXT channel. 
-    
+        A temporary sub-channel within a GUILD_TEXT channel.
+
         Only viewable by those invited and those with the MANAGE_THREADS permission
     GUILD_STAGE_VOICE
         A voice channel for hosting events with an audience.
@@ -37,6 +50,7 @@ class ChannelType(IntEnum):
     GUILD_FORUM
         A channel that can only contain threads.
     """
+
     GUILD_TEXT = 0
     """A text channel within a server."""
     DM = 1
@@ -55,8 +69,8 @@ class ChannelType(IntEnum):
     """A temporary sub-channel within a GUILD_TEXT channel."""
     GUILD_PRIVATE_THREAD = 12
     """
-    A temporary sub-channel within a GUILD_TEXT channel. 
-    
+    A temporary sub-channel within a GUILD_TEXT channel.
+
     Only viewable by those invited and those with the MANAGE_THREADS permission
     """
     GUILD_STAGE_VOICE = 13
@@ -70,7 +84,7 @@ class ChannelType(IntEnum):
 class VideoQualityMode(IntEnum):
     """
     Represents video quality modes from Discord
-    
+
     Constants
     ---------
     AUTO
@@ -78,6 +92,7 @@ class VideoQualityMode(IntEnum):
     FULL
         720p video resolution (1280x720).
     """
+
     AUTO = 1
     """Discord chooses the quality for optimal performance."""
     FULL = 2
@@ -86,10 +101,11 @@ class VideoQualityMode(IntEnum):
 
 class ChannelFlags(IntFlag):
     """The bitwise values that represent channel flags from Discord"""
+
     PINNED = 1 << 1
     """
     This thread is pinned to the top of its parent channel.
-    
+
     Only available on forum channels.
     """
 
@@ -149,6 +165,7 @@ class MessageType(IntEnum):
     AUTO_MODERATION_ACTION
         A message from AutoMod describing an action it took.
     """
+
     DEFAULT = 0
     """A normal message."""
     RECIPIENT_ADD = 1
@@ -212,6 +229,7 @@ class MessageActivityType(IntEnum):
     JOIN_REQUEST
         A join request message activity.
     """
+
     JOIN = 1
     """A join message activity."""
     SPECTATE = 2
@@ -224,6 +242,7 @@ class MessageActivityType(IntEnum):
 
 class MessageFlags(IntFlag):
     """The bitwise values that represent message flags from Discord"""
+
     CROSSPOSTED = 1 << 0
     """This message has been published to subscribed channels."""
     IS_CROSSPOST = 1 << 1
@@ -327,8 +346,8 @@ class Channel(Object):
     type : `ChannelType`
         The type of the channel.
     guild_id : `Snowflake`, optional
-        The ID of the guild. 
-        This is nullable due to some Gateway events 
+        The ID of the guild.
+        This is nullable due to some Gateway events
         lacking the data for the ID.
     position : `int`, optional
         Sorted position of the channel.
@@ -390,7 +409,7 @@ class Channel(Object):
         This is only included on certain api endpoints.
     default_auto_archive_duration : `int`, optional
         The default archive duration for threads in minutes.
-    
+
         Can be set to `60`, `1440`, `4320`, `10080`.
     permissions : `str`, optional
         Computed permissions for the invoking user in the channel, including overwrites.
@@ -413,14 +432,12 @@ class Channel(Object):
     """
     position: int | None = field(default=None)
     """Sorted position of the channel."""
-    permission_overwrites: list[dict] | list[Overwrite] | None = field(
-        default=None
-    )
+    permission_overwrites: list[dict] | list[Overwrite] | None = field(default=None)
     """Explicit permission overwrites for members and roles."""
     name: str | None = field(default=None)
     """
-    The name of the channel. 
-    
+    The name of the channel.
+
     A channel name is in-between 1-100 characters.
     """
     topic: str | None = field(default=None)
@@ -434,7 +451,7 @@ class Channel(Object):
     last_message_id: str | Snowflake | None = field(converter=Snowflake, default=None)
     """
     The ID of the last message sent in this channel.
-    
+
     Can also be a thread if the channel is a forum. May not be an existing or valid message or thread.
     """
     bitrate: int | None = field(default=None)
@@ -444,7 +461,7 @@ class Channel(Object):
     rate_limit_per_user: int | None = field(default=None)
     """
     Amount of seconds a user has to wait before sending another message
-    
+
     Can be a number up to 21600. Bots, as well as users with the permission manage_messages or manage_channel, are unaffected.
     """
     recipients: list[dict] | list[User] | None = field(default=None)
@@ -481,26 +498,28 @@ class Channel(Object):
 
     Stops counting at `50`.
     """
-    thread_metadata: dict | ThreadMetadata | None = field(
-        converter=ThreadMetadata, default=None
-    )
+    # TODO: implement Thread Metadata object.
+    thread_metadata: dict | ThreadMetadata | None = field(  # noqa
+        converter=ThreadMetadata, default=None  # noqa
+    )  # noqa
     """Thread-specific fields not needed by other channels."""
-    member: dict | ThreadMember | None = field(converter=ThreadMember, default=None)
+    # TODO: implement Thread Member object.
+    member: dict | ThreadMember | None = field(converter=ThreadMember, default=None)  # noqa
     """
     The thread member representation of the user if they have joined the thread.
-        
+
     This is only included on certain api endpoints.
     """
     default_auto_archive_duration: int | None = field(default=None)
     """
     The default archive duration for threads in minutes.
-    
+
     Can be set to `60`, `1440`, `4320`, `10080`.
     """
     permissions: str | None = field(default=None)
     """
     The computed permissions for the invoking user in the channel, including any overwrites.
-        
+
     Only included when part of the resolved data received on a slash command interaction.
     """
     flags: int | ChannelFlags | None = field(converter=ChannelFlags, default=None)

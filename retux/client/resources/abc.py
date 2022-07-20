@@ -21,13 +21,11 @@ class Snowflake:
 
     Attributes
     ----------
-    _snowflake : `str`, optional
+    _snowflake : `str`
         The internally stored snowflake. Snowflakes are always in string-form.
 
-        The snowflake may only be `None` in the event that a given
-        field in a resource does not supply it. This should not be always
-        taken for granted as having a value. Please use the representation
-        of the class itself.
+        This value should never need to be directly checked. Please use the
+        representation of the class itself to do this for identity comparisons.
 
     Methods
     -------
@@ -47,7 +45,7 @@ class Snowflake:
         generated on this snowflake, e.g. a resource.
     """
 
-    _snowflake: str | int | None = field(converter=str)
+    _snowflake: str | int = field(converter=str)
     """
     The internally stored snowflake. Snowflakes are always in string-form.
 
@@ -112,6 +110,10 @@ class Partial:
     class lives to serve as a way to better typehint this incomplete
     data.
     """
+
+    def __init__(self, **kwargs):
+        for attr in kwargs:
+            self.__setattr__(attr, kwargs[attr])
 
 
 @define(kw_only=True)

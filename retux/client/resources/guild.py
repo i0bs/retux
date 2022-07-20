@@ -1,10 +1,27 @@
+from datetime import datetime
 from enum import IntFlag
+from typing import Any
 from aenum import IntEnum
 from attrs import define, field
+
+from .user import User, UserFlags, UserPremiumType
 
 from .abc import Object, Partial, Snowflake
 
 from ...utils.converters import optional_c, list_c
+
+__all__ = (
+    "Guild",
+    "UnavailableGuild",
+    "GuildPreview",
+    "GuildWidget",
+    "WelcomeScreen",
+    "WelcomeScreenChannel",
+    "SystemChannelFlags",
+    "GuildNSFWLevel",
+    "ExplicitContentFilterLevel",
+    "VerificationLevel",
+)
 
 
 @define(kw_only=True)
@@ -401,3 +418,361 @@ class Guild(Object):
     """The welcome screen of the guild, if present."""
     # TODO: implement Sticker object.
     # stickers: list[dict] | list[Sticker] | None = field(converter=Sticker, default=None)
+
+
+@define(kw_only=True)
+class GuildPreview(Object):
+    """
+    Represents the preview of a guild from Discord.
+
+    Attributes
+    ----------
+    id : `Snowflake`
+        The ID of the guild being previewed.
+    name : `str`
+        The name of the guild being previewed.
+    features : `list[str]`
+        The enabled features of the previewed guild.
+    approximate_member_count : `int`
+        The approximated amount of members in the previewed guild.
+    approximate_presence_count : `int`
+        The approximated count of presences in the previewed guild.
+    icon : `str`, optional
+        The icon of the guild being previewed, if present.
+    splash : `str,` optional
+        The splash invite background screen image of the previewed
+        guild, if present.
+    discovery_splash : `str`, optional
+        The hash discovery splash screen image, of the previewed
+        guild, if present.
+    description : `str`, optional
+        The description of the guild being previewed, if presently
+        determined as a Community server.
+    """
+
+    id: str | Snowflake = field(converter=Snowflake)
+    """The ID of the guild being previewed."""
+    name: str = field()
+    """The name of the guild being previewed."""
+    features: list[str] = field()
+    """The enabled features of the previewed guild."""
+    # TODO: implement Emoji object.
+    # emojis: list[dict] | list[Emoji] = field(converter=list_c(Emoji))
+    approximate_member_count: int = field()
+    """The approximated amount of members in the previewed guild."""
+    approximate_presence_count: int = field()
+    """The approximated count of presences in the previewed guild."""
+    icon: str | None = field(default=None)
+    """The icon of the guild being previewed, if present."""
+    splash: str | None = field(default=None)
+    """
+    The splash invite background screen image of the previewed
+    guild, if present.
+    """
+    discovery_splash: str | None = field(default=None)
+    """
+    The hash discovery splash screen image, of the previewed
+    guild, if present.
+    """
+    description: str | None = field(default=None)
+    """
+    The description of the guild being previewed, if presently
+    determined as a Community server.
+    """
+    # TODO: implement Sticker object.
+    # stickers: list[dict] | list[Sticker] | None = field(converter=optional_c(list_c(Sticker)), default=None)
+
+
+@define(kw_only=True)
+class GuildWidget(Object):
+    """Represents the widget of a guild from Discord."""
+
+    id: str | Snowflake = field(converter=Snowflake)
+    """The ID of the guild on the widget."""
+    name: str = field()
+    """The name of the guild on the widget."""
+    # TODO: implement Partial Channel object.
+    # channels: list[dict] | list[PartialChannel] = field(converter=list_c(PartialChannel))
+    # TODO: implement Partial Member object.
+    # members: list[dict] | list[PartialMember] = field(converter=list_c(PartialMember))
+    presence_count: int = field()
+    """The amount of members online in the guild."""
+    instant_invite: str | None = field(default=None)
+    """An instant invite provided for the guild if it exists."""
+
+
+@define(kw_only=True)
+class GuildWidgetSettings:
+    """
+    Represents the settings of a widget of a guild in Discord.
+
+    Attributes
+    ----------
+    enabled : `bool`
+        Whether the widget is enabled for the guild or not.
+    channel_id : `Snowflake`, optional
+        The ID of the channel shown in the guild's widget,
+        if present.
+    """
+
+    enabled: bool = field()
+    """Whether the widget is enabled for the guild or not."""
+    channel_id: str | Snowflake | None = field(converter=optional_c(Snowflake), default=None)
+    """The ID of the channel shown in the guild's widget, if present."""
+
+
+@define(kw_only=True)
+class Member(Partial):
+    """
+    Represents the member in a guild from Discord.
+
+    ---
+
+    Guild members have their base user information
+    present via. accessing the `user` field. This information
+    is presented in the form of property methods, in order
+    to avoid making users go through an unnecessary chain step.
+
+    This dataclass is registered as a "partial" because it derives
+    some of the original information pertaining to a `User` object.
+    Despite this, it also registers as an object albeit the lack
+    of the `id` field being properly given by the Gateway.
+
+    ---
+
+    Attributes
+    ----------
+    user : `User`, optional
+        The user representation of the member in the guild. This is only
+        `None` when provided in a `MESSAGE_CREATE` or `MESSAGE_UPDATE`
+        Gateway event.
+    nick : `str`, optional
+        The nickname of the member in the guild, if present.
+    avatar : `str`, optional
+        The hash of the guild member's avatar, if present.
+    roles : `list[Snowflake]`, optional
+        The roles of the member in the guild, if present.
+
+        Roles are only provided in the form of `Snowflake` objects,
+        and are not given as a `Role` object. This is subject to change
+        in the future.
+    joined_at : `datetime`
+        The time at which the member joined the guild.
+    premium_since : `datetime`, optional
+        The time at which the member began boosting the guild,
+        if present.
+    deaf : `bool`
+        Whether the member is deafened in any of the guild's voice channels
+        or not. Defaults to `False`.
+    mute : `bool`
+        Whether the member is muted in any of the guild's voice channels
+        or not. Defaults to `False`.
+    pending : `bool`
+        Whether the member is still pending access to join the guild
+        or not. Defaults to `False`. This is only supplied when any Gateway
+        event that is not intended for guilds.
+    permissions : `str`, optional
+        The calculated permissions of the member in the guild, including
+        any overwrites. This is only returned when passed inside of an
+        `Interaction` object.
+    communication_disabled_until : `datetime`, optional
+        The time remaining until the member of the guild has their
+        timeout removed. This is `None` when a timeout has not yet
+        been applied, or when one has ended.
+
+    Methods
+    -------
+    id : `Snowflake`, optional
+        The ID of the user, if present.
+    username : `str,` optional
+        The ID of the user, if present.
+    discriminator : `str`, optional
+        The discriminator (4-digit tag) of the user, if present.
+    avatar : `str`, optional
+        The hash of the user's avatar, if present.
+    bot : `bool`, optional
+        Whether the user is a bot or not, if present.
+    system : `bool`, optional
+        Whether the user is from the official Discord System or not,
+        if present.
+    mfa_enabled : `bool`, optional
+        Whether the user has 2FA (two-factor authentication) enabled
+        or not, if present.
+    banner : `str`, optional
+        The hash of the user's banner, if present.
+    accent_color : `int`, optional
+        The color of the user's banner, if present.
+    locale : `str`, optional
+        The user's selected locale, if present.
+    verified : `bool`, optional
+        Whether the user has a verified e-mail or not.
+    email : `str`, optional
+        The e-mail associated to the user's account, if present.
+    flags : `UserFlags`, optional
+        The public flags on the user's account, if present.
+    premium_type : `UserPremiumType`, optional
+        The type of Nitro subscription the user has, if present.
+    public_flags : `UserFlags`, optional
+        The type of Nitro subscription the user has, if present.
+    """
+
+    user: dict | User | None = field(converter=optional_c(User), default=None)
+    """
+    The user representation of the member in the guild. This is only `None` when
+    provided in a `MESSAGE_CREATE` or `MESSAGE_UPDATE` Gateway event.
+    """
+    nick: str | None = field(default=None)
+    """The nickname of the member in the guild, if present."""
+    avatar: str | None = field(default=None)
+    """The hash of the guild member's avatar, if present."""
+    # TODO: change roles field to give a list of Role objects. This is an API
+    # limitation.
+    roles: list[str] | list[Snowflake] | None = field(
+        converter=optional_c(list_c(Snowflake)), default=None
+    )
+    """
+    The roles of the member in the guild, if present.
+
+    Roles are only provided in the form of `Snowflake` objects, and are not given
+    as a `Role` object. This is subject to change in the future.
+    """
+    joined_at: str | datetime = field(converter=datetime.fromisoformat)
+    """The time at which the member joined the guild."""
+    premium_since: str | datetime | None = field(
+        converter=optional_c(datetime.fromisoformat), default=None
+    )
+    """The time at which the member began boosting the guild, if present."""
+    deaf: bool = field(default=False)
+    """
+    Whether the member is deafened in any of the guild's voice channels or not.
+    Defaults to `False`.
+    """
+    mute: bool = field(default=False)
+    """
+    Whether the member is muted in any of the guild's voice channels or not.
+    Defaults to `False`.
+    """
+    pending: bool = field(default=False)
+    """
+    Whether the member is still pending access to join the guild or not.
+    Defaults to `False`. This is only supplied when any Gateway event that
+    is not intended for guilds.
+    """
+    permissions: str | None = field(default=None)
+    """
+    The calculated permissions of the member in the guild, including
+    any overwrites. This is only returned when passed inside of an
+    `Interaction` object.
+    """
+    communication_disabled_until: str | datetime | None = field(
+        converter=optional_c(datetime.fromisoformat), default=None
+    )
+    """
+    The time remaining until the member of the guild has their timeout
+    removed. This is `None` when a timeout has not yet  been applied,
+    or when one has ended.
+    """
+
+    def exists(self, base: Any, attr: Any) -> Any | None:
+        """
+        Determines if a field exists for property methods.
+
+        Attributes
+        ----------
+        base : `typing.Any`
+            The field to check for. This is usually a class
+            given.
+        attr : `typing.Any`
+            The specific attribute of the base to look for.
+            This works off of `base`, which should be an existing
+            attribute of what you're looking at inside the given
+            dataclass.
+
+        Returns
+        -------
+        `typing.Any`, optional
+            The value of the attribute, if it is presnet.
+            This will otherwise return `None`.
+        """
+        if base is not None:
+            return attr
+        else:
+            return None
+
+    @property
+    def id(self) -> Snowflake | None:
+        """The ID of the user, if present."""
+        return self.exists(self.user, self.user.id)
+
+    @property
+    def username(self) -> str | None:
+        """The ID of the user, if present."""
+        return self.exists(self.user, self.user.username)
+
+    @property
+    def discriminator(self) -> str | None:
+        """The discriminator (4-digit tag) of the user, if present."""
+        return self.exists(self.user, self.user.discriminator)
+
+    @property
+    def avatar(self) -> str | None:
+        """The hash of the user's avatar, if present."""
+        return self.exists(self.user, self.user.avatar)
+
+    @property
+    def bot(self) -> bool | None:
+        """Whether the user is a bot or not, if present."""
+        return self.exists(self.user, self.user.bot)
+
+    @property
+    def system(self) -> bool | None:
+        """Whether the user is from the official Discord System or not, if present."""
+        return self.exists(self.user, self.user.system)
+
+    @property
+    def mfa_enabled(self) -> bool | None:
+        """
+        Whether the user has 2FA (two-factor authentication) enabled
+        or not, if present.
+        """
+        return self.exists(self.user, self.user.mfa_enabled)
+
+    @property
+    def banner(self) -> str | None:
+        """The hash of the user's banner, if present."""
+        return self.exists(self.user, self.user.banner)
+
+    @property
+    def accent_color(self) -> int | None:
+        """The color of the user's banner, if present."""
+        return self.exists(self.user, self.user.accent_color)
+
+    @property
+    def locale(self) -> str | None:
+        """The user's selected locale, if present."""
+        return self.exists(self.user, self.user.locale)
+
+    @property
+    def verified(self) -> bool | None:
+        """Whether the user has a verified e-mail or not."""
+        return self.exists(self.user, self.user.verified)
+
+    @property
+    def email(self) -> str | None:
+        """The e-mail associated to the user's account, if present."""
+        return self.exists(self.user, self.user.email)
+
+    @property
+    def flags(self) -> UserFlags | None:
+        """The public flags on the user's account, if present."""
+        return self.exists(self.user, self.user.flags)
+
+    @property
+    def premium_type(self) -> UserPremiumType | None:
+        """The type of Nitro subscription the user has, if present."""
+        return self.exists(self.user, self.user.premium_type)
+
+    @property
+    def public_flags(self) -> UserFlags | None:
+        """The type of Nitro subscription the user has, if present."""
+        return self.exists(self.user, self.user.public_flags)

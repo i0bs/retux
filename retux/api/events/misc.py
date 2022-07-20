@@ -35,7 +35,7 @@ class TypingStart:
     """The ID of the channel when typing occured."""
     user_id: str | Snowflake = field(converter=Snowflake)
     """The ID of the user who started typing."""
-    timestamp: int = field(converter=datetime.fromtimestamp)
+    timestamp: int | datetime = field(converter=datetime.fromtimestamp)
     """The timestamp of when the typing occured."""
     guild_id: str | Snowflake | None = field(converter=optional_c(Snowflake), default=None)
     """
