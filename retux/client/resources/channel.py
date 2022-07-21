@@ -373,7 +373,7 @@ class MessageReference:
     """The ID of the originating message's channel."""
     guild_id: str | Snowflake | None = field(converter=optional_c(Snowflake), default=None)
     """The ID of the originating message's guild."""
-    fail_if_not_exists: bool | None = field(default=True)
+    fail_if_not_exists: bool = field(default=True)
     """
     Whether or not to error if the referenced doesn't exist.
     
