@@ -32,7 +32,7 @@ class BotProtocol(Protocol):
         ...
 
     @property
-    def is_offline(self) -> bool:
+    def offline(self) -> bool:
         ...
 
 
@@ -154,8 +154,9 @@ class Bot(BotProtocol):
         --------
         In retux, `event` is an argument containing the information relating
         to the event you're listening to. This argument is always required
-        for an `@on` coroutine.
-
+        for an `@on` coroutine. `event` can be anything so as long as it's
+        dispatched and subclassed as a `_Event`. In any case, however, you
+        can always typehint it as what the event is intending to listen to.
         ```
         @bot.on
         async def ready(event):
@@ -177,10 +178,36 @@ class Bot(BotProtocol):
         if one is called for, including invalidated sessions.
         ```
         @bot.on
-        async def reconnect(event):
+        async def reconnect(event: typing.Any):
             if bot.is_offline:
                 await bot.restart()
         ```
+
+        Sometimes, however, you may want to provide something a little bit
+        more structural and organised than numerous functions laid out all
+        over the place. Instead of resorting these into an extension,
+        we have created what's known as "event classes" for this instead.
+        ```py
+        @bot.on
+        class MessageEvent:
+            async def create(message: retux.Message):
+                ...
+            async def remove(message, before, after):
+                ...
+        ```
+
+        The nicest part of this is that you can create your own event handlers
+        for attributes changing, done with `async def channel_id(value)`!
+
+        Additionally, you can also provide converters for your message event,
+        in case you do not feel like specifying it via. `create` and etc., such
+        as `async def to_voice(channel: retux.VoiceChannel)`.
+
+        If a bot developer so wishes to create their own functions inside of
+        the class as well, it is highly recommended to dunder (add an `_` to
+        the beginning of) their custom-defined methods. This poses no issue
+        to retux's handling, but helps you as the bot developer keep up with
+        what you're doing.
 
         Parameters
         ----------
@@ -218,7 +245,7 @@ class Bot(BotProtocol):
         return self._gateway.latency
 
     @property
-    def is_offline(self) -> bool:
+    def offline(self) -> bool:
         """
         Whether the bot is offline or not.
         May be useful for determining when to restart!
