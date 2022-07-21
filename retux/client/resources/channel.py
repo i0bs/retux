@@ -1861,12 +1861,12 @@ class Message(Object):
     """Whether or not this message mentions everyone."""
     mentions: list[dict] | list[User] = field(converter=list_c(User))
     """Users specifically mentioned in this message."""
-    # TODO: Implement roles
+    # TODO: Implement Role object.
     # mention_roles: list[dict] | list[Role] = field(converter=list_c(Role))
     """Roles specifically mentioned in this message."""
     mention_channels: list[dict] | list[ChannelMention] | None = field(converter=optional_c(list_c(ChannelMention)), default=None)
     """Channels specifically mentioned in this message."""
-    # TODO: Implement attachments
+    # TODO: Implement Attachment object
     # attachments: list[dict] | list[Role] = field(converter=list_c(Attachment))
     """The attachments of the message."""
     embeds: list[dict] | list[Embed] = field(converter=list_c(Embed))
@@ -1905,15 +1905,15 @@ class Message(Object):
     """Bitwise values representing a channel's flags."""
     referenced_message: dict | "Message" | None = field(default=None) # TODO: Implement recursive converters
     """The message associated with a message_reference."""
-    # TODO: Implement interactions
+    # TODO: Implement Interaction object.
     # interaction: dict | Interaction | None = field(converter=optional_c(Interaction), default=None)
     """# The message's interaction if it is a response to an interaction."""
     thread: dict | ThreadChannel | None = field(converter=optional_c(Channel), default=None)
     """# The thread of the message, if it is the message that started a thread."""
-    # TODO: Implement components
+    # TODO: Implement Component object.
     # components: list[dict] | list[Component] | None = field(converter=optional_c(list_c(Component)), default=None)
     """# The components on a message."""
-    # TODO: Implement stickers
+    # TODO: Implement StickerItem object.
     # sticker_items: list[dict] | list[StickerItem] | None = field(converter=optional_c(list_c(StickerItem)))
     """# The items used to begin rendering the message's stickers."""
     # TODO: Implement stickers
