@@ -486,7 +486,7 @@ class ThreadMember(Object):
 
     Attributes
     ----------
-    id : `Snowflake`
+    id : `Snowflake`, optional
         The ID of the thread.
 
         This field is omitted on the member sent within each thread in GUILD_CREATE.
