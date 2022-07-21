@@ -17,7 +17,15 @@ __all__ = (
     "MessageActivityType",
     "MessageFlags",
     "VideoQualityMode",
+    "Reaction",
     "Overwrite",
+    "MessageActivity",
+    "MessageReference",
+    "ChannelMention",
+    "ThreadMetadata",
+    "ThreadMember",
+    "Embed",
+    "Message"
 )
 
 
