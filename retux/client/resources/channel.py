@@ -1617,20 +1617,20 @@ class _EmbedAuthor:
     name : `str`, optional
         The name of the author.
     url : `str`, optional
-        The url of the author.
+        The URL of the author.
     icon_url : `str`, optional
-        The url of author's icon.
+        The URL of author's icon.
     proxy_icon_url : `str`, optional
-        The proxied url of the author's icon.
+        The proxied URL of the author's icon.
     """
     name: str | None = field(default=None)
     """The name of the author."""
     url: str | None = field(default=None)
-    """The url of the author."""
+    """The URL of the author."""
     icon_url: str | None = field(default=None)
-    """The url of author's icon."""
+    """The URL of author's icon."""
     proxy_icon_url: str | None = field(default=None)
-    """The proxied url of the author's icon."""
+    """The proxied URL of the author's icon."""
 
 
 @define(kw_only=True)
@@ -1643,22 +1643,22 @@ class _EmbedFooter:
     text : `str`, optional
         The footer text of an embed.
     icon_url : `str`, optional
-        The url of the footer icon.
+        The URL of the footer icon.
 
         Only supports http(s) and attachments.
     proxy_icon_url : `str`, optional
-        A proxied url of the footer icon.
+        A proxied URL of the footer icon.
     """
     text: str | None = field(default=None)
     """The footer text of an embed."""
     icon_url: str | None = field(default=None)
     """
-    The url of the footer icon.
+    The URL of the footer icon.
 
     Only supports http(s) and attachments.
     """
     proxy_icon_url: str | None = field(default=None)
-    """A proxied url of the footer icon."""
+    """A proxied URL of the footer icon."""
 
 
 @define(kw_only=True)
