@@ -436,13 +436,16 @@ class ThreadMetadata:
     archived : `bool`
         Whether or not the thread is currently archived.
     auto_archive_duration : `int`
-        The amount of minutes after the last message was sent before Discord automatically archives the thread.
+        The amount of minutes after the last message was sent before
+        Discord automatically archives the thread.
     archive_timestamp : `datetime`
-        When the thread's archive status last changed, used for calculating recent activity.
+        When the thread's archive status last changed, used for
+        calculating recent activity.
     locked : `bool`
         Whether or not the thread is locked.
     
-        If a thread is locked, only users with MANAGE_THREADS permissions can unarchive it.
+        If a thread is locked, only users with MANAGE_THREADS permissions
+        can unarchive it.
     invitable : `bool`
         Whether or not non-moderators can add other non-moderators to a thread.
     
@@ -456,7 +459,10 @@ class ThreadMetadata:
     archived: bool = field()
     """Whether or not the thread is currently archived."""
     auto_archive_duration: int = field()
-    """The amount of minutes after the last message was sent before Discord automatically archives the thread."""
+    """
+    The amount of minutes after the last message was sent before
+    Discord automatically archives the thread.
+    """
     archive_timestamp: str | datetime = field(converter=datetime.fromisoformat)
     """When the thread's archive status last changed, used for calculating recent activity."""
     locked: bool = field()
