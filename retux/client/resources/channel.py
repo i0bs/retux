@@ -1868,7 +1868,7 @@ class Message(Object):
     """Channels specifically mentioned in this message."""
     # TODO: Implement Attachment object
     # attachments: list[dict] | list[Attachment] = field(converter=list_c(Attachment))
-    """The attachments of the message."""
+    # """The attachments of the message."""
     embeds: list[dict] | list[Embed] = field(converter=list_c(Embed))
     """The embeds of the message."""
     reactions: list[dict] | list[Reaction] | None = field(converter=optional_c(list_c(Reaction)), default=None)
