@@ -292,8 +292,8 @@ class Reaction:
     """Number of reactions using the emoji."""
     me: bool = field()
     """Whether or not the current user has reacted using this emoji."""
-    # TODO: Implement Emojis
-    # emoji: EmojiPartial = field(converter=Emoji)
+    # TODO: Implement Partial Emoji object.
+    # emoji: PartialEmoji = field(converter=PartialEmoji)
     """Information about the emoji of the reaction."""
 
 
