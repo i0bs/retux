@@ -1,6 +1,6 @@
 from enum import IntEnum, IntFlag
 from attrs import define, field
-from retux.client.resources.abc import Snowflake, Object
+from retux.client.resources.abc import Snowflake, Object, Partial
 from retux.client.resources.user import User
 
 __all__ = (
@@ -332,6 +332,847 @@ class FollowedChannel:
     """The ID of the source channel."""
     webhook_id: str | Snowflake = field(converter=Snowflake)
     """The ID of the created target webhook."""
+
+
+@define(kw_only=True)
+class TextChannel(Partial, Object):
+    """
+    Represents a text channel from Discord.
+
+    ---
+
+    This is an event-specific dataclass that is not passed by
+    Discord's Gateway. This will only contain the data relevant
+    to a text channel -- and just the `id` of it. `type` is
+    dropped as this is already given for the event handler via.
+    specification in the typehinting.
+
+    ---
+
+    Attributes
+    ----------
+    id : `Snowflake`
+        The ID of the channel.
+    guild_id : `Snowflake`, optional
+        The ID of the guild.
+        This is nullable due to some Gateway events
+        lacking the data for the ID.
+    position : `int`, optional
+        Sorted position of the channel.
+    permission_overwrites : `list[Overwrite]`, optional
+        Explicit permission overwrites for members and roles.
+    name : `str`, optional
+        The name of the channel.
+
+        A channel name is in-between 1-100 characters.
+    topic : `str`, optional
+        The topic of the channel.
+
+        A channel topic is in-between 1-1024 characters.
+    nsfw : `bool`, optional
+        Whether or not the channel is NSFW. Defaults to `False`.
+    last_message_id : `Snowflake`, optional
+        The ID of the last message sent in this channel
+
+        Can also be a thread if the channel is a forum. May not be an existing or valid message or thread.
+    rate_limit_per_user : `int`, optional
+        Amount of seconds a user has to wait before sending another message
+
+        Can be a number up to 21600. Bots, as well as users with the permission manage_messages or manage_channel, are unaffected.
+    icon : `str`, optional
+        The hash for the channel's icon.
+    owner_id : `Snowflake`, optional
+        The ID of the creator of the group dm or thread.
+    application_id : `Snowflake`, optional
+        The ID of the application that created the dm if it is bot-created.
+    parent_id : `Snowflake`, optional
+        The ID of the parent of the channel
+
+        Represents the parent category for regular channels and the parent channel for threads.
+    last_pin_timestamp : `str`, optional
+        The time when the last message was pinned.
+    message_count : `int`, optional
+        An approximate count of messages in a thread.
+
+        Stops counting at `50`.
+    member_count : `int`, optional
+        An approximate count of messages in a thread.
+
+        Stops counting at `50`.
+    thread_metadata : `ThreadMetadata`, optional
+        Thread-specific fields not needed by other channels.
+    member : `ThreadMember`, optional
+        Thread member object for the current user if they have joined the thread
+
+        This is only included on certain api endpoints.
+    default_auto_archive_duration : `int`, optional
+        The default archive duration for threads in minutes.
+
+        Can be set to `60`, `1440`, `4320`, `10080`.
+    permissions : `str`, optional
+        Computed permissions for the invoking user in the channel, including overwrites.
+
+        Only included when part of the resolved data received on a slash command interaction.
+    flags : `ChannelFlags`, optional
+        Channel flags combined as a bitfield.
+    """
+
+    id: str | Snowflake = field(converter=Snowflake)
+    """The ID of the channel."""
+    guild_id: str | Snowflake | None = field(default=None, converter=Snowflake)
+    """
+    The ID of the guild.
+
+    This is nullable due to some Gateway events
+    lacking the data for the ID.
+    """
+    position: int | None = field(default=None)
+    """Sorted position of the channel."""
+    permission_overwrites: list[dict] | list[Overwrite] | None = field(default=None)
+    """Explicit permission overwrites for members and roles."""
+    name: str | None = field(default=None)
+    """
+    The name of the channel.
+
+    A channel name is in-between 1-100 characters.
+    """
+    topic: str | None = field(default=None)
+    """
+    The topic of the channel.
+
+    A channel topic is in-between 1-1024 characters.
+    """
+    nsfw: bool | None = field(default=False)
+    """Whether or not the channel is NSFW. Defaults to `False`."""
+    last_message_id: str | Snowflake | None = field(converter=Snowflake, default=None)
+    """
+    The ID of the last message sent in this channel.
+
+    Can also be a thread if the channel is a forum. May not be an existing or valid message or thread.
+    """
+    rate_limit_per_user: int | None = field(default=None)
+    """
+    Amount of seconds a user has to wait before sending another message
+
+    Can be a number up to 21600. Bots, as well as users with the permission manage_messages or manage_channel, are unaffected.
+    """
+    recipients: list[dict] | list[User] | None = field(default=None)
+    """The recipients of the dm."""
+    icon: str | None = field(default=None)
+    """The hash for the channel's icon."""
+    owner_id: str | Snowflake | None = field(converter=Snowflake, default=None)
+    """The ID of the creator of the group dm or thread."""
+    application_id: str | Snowflake | None = field(converter=Snowflake, default=None)
+    """The ID of the application that created the dm if it is bot-created."""
+    parent_id: str | Snowflake | None = field(converter=Snowflake, default=None)
+    """
+    The ID of the parent of the channel
+
+    Represents the parent category for regular channels and the parent channel for threads.
+    """
+    last_pin_timestamp: str | None = field(default=None)
+    """The time when the last message was pinned."""
+    """The video quality mode of the voice channel."""
+    message_count: int | None = field(default=None)
+    """"
+    The approximated amount of messages in a thread.
+
+    Stops counting at `50`.
+    """
+    member_count: int | None = field(default=None)
+    """
+    The approximated amount of users in a thread.
+
+    Stops counting at `50`.
+    """
+    # TODO: implement Thread Metadata object.
+    thread_metadata: dict | ThreadMetadata | None = field(  # noqa
+        converter=ThreadMetadata, default=None  # noqa
+    )  # noqa
+    """Thread-specific fields not needed by other channels."""
+    # TODO: implement Thread Member object.
+    member: dict | ThreadMember | None = field(converter=ThreadMember, default=None)  # noqa
+    """
+    The thread member representation of the user if they have joined the thread.
+
+    This is only included on certain api endpoints.
+    """
+    default_auto_archive_duration: int | None = field(default=None)
+    """
+    The default archive duration for threads in minutes.
+
+    Can be set to `60`, `1440`, `4320`, `10080`.
+    """
+    permissions: str | None = field(default=None)
+    """
+    The computed permissions for the invoking user in the channel, including any overwrites.
+
+    Only included when part of the resolved data received on a slash command interaction.
+    """
+    flags: int | ChannelFlags | None = field(converter=ChannelFlags, default=None)
+    """Channel flags combined as a bitfield."""
+
+
+@define(kw_only=True)
+class AnnouncementChannel(TextChannel):
+    """
+    Represents a DM channel on Discord.
+
+    ---
+
+    This information is essentially in vogue the same as a
+    text channel, presented with the `TextChannel` object.
+
+    ---
+
+    Attributes
+    ----------
+    id : `Snowflake`
+        The ID of the channel.
+    guild_id : `Snowflake`, optional
+        The ID of the guild.
+        This is nullable due to some Gateway events
+        lacking the data for the ID.
+    position : `int`, optional
+        Sorted position of the channel.
+    permission_overwrites : `list[Overwrite]`, optional
+        Explicit permission overwrites for members and roles.
+    name : `str`, optional
+        The name of the channel.
+
+        A channel name is in-between 1-100 characters.
+    topic : `str`, optional
+        The topic of the channel.
+
+        A channel topic is in-between 1-1024 characters.
+    nsfw : `bool`, optional
+        Whether or not the channel is NSFW. Defaults to `False`.
+    last_message_id : `Snowflake`, optional
+        The ID of the last message sent in this channel
+
+        Can also be a thread if the channel is a forum. May not be an existing or valid message or thread.
+    rate_limit_per_user : `int`, optional
+        Amount of seconds a user has to wait before sending another message
+
+        Can be a number up to 21600. Bots, as well as users with the permission manage_messages or manage_channel, are unaffected.
+    icon : `str`, optional
+        The hash for the channel's icon.
+    owner_id : `Snowflake`, optional
+        The ID of the creator of the group dm or thread.
+    application_id : `Snowflake`, optional
+        The ID of the application that created the dm if it is bot-created.
+    parent_id : `Snowflake`, optional
+        The ID of the parent of the channel
+
+        Represents the parent category for regular channels and the parent channel for threads.
+    last_pin_timestamp : `str`, optional
+        The time when the last message was pinned.
+    message_count : `int`, optional
+        An approximate count of messages in a thread.
+
+        Stops counting at `50`.
+    member_count : `int`, optional
+        An approximate count of messages in a thread.
+
+        Stops counting at `50`.
+    thread_metadata : `ThreadMetadata`, optional
+        Thread-specific fields not needed by other channels.
+    member : `ThreadMember`, optional
+        Thread member object for the current user if they have joined the thread
+
+        This is only included on certain api endpoints.
+    default_auto_archive_duration : `int`, optional
+        The default archive duration for threads in minutes.
+
+        Can be set to `60`, `1440`, `4320`, `10080`.
+    permissions : `str`, optional
+        Computed permissions for the invoking user in the channel, including overwrites.
+
+        Only included when part of the resolved data received on a slash command interaction.
+    flags : `ChannelFlags`, optional
+        Channel flags combined as a bitfield.
+    """
+
+
+@define(kw_only=True)
+class ForumChannel(TextChannel):
+    """
+    Represents a forum channel on Discord.
+
+    ---
+
+    This information is essentially in vogue the same as a
+    text channel, presented with the `TextChannel` object.
+
+    ---
+
+    Attributes
+    ----------
+    id : `Snowflake`
+        The ID of the channel.
+    guild_id : `Snowflake`, optional
+        The ID of the guild.
+        This is nullable due to some Gateway events
+        lacking the data for the ID.
+    position : `int`, optional
+        Sorted position of the channel.
+    permission_overwrites : `list[Overwrite]`, optional
+        Explicit permission overwrites for members and roles.
+    name : `str`, optional
+        The name of the channel.
+
+        A channel name is in-between 1-100 characters.
+    topic : `str`, optional
+        The topic of the channel.
+
+        A channel topic is in-between 1-1024 characters.
+    nsfw : `bool`, optional
+        Whether or not the channel is NSFW. Defaults to `False`.
+    last_message_id : `Snowflake`, optional
+        The ID of the last message sent in this channel
+
+        Can also be a thread if the channel is a forum. May not be an existing or valid message or thread.
+    rate_limit_per_user : `int`, optional
+        Amount of seconds a user has to wait before sending another message
+
+        Can be a number up to 21600. Bots, as well as users with the permission manage_messages or manage_channel, are unaffected.
+    icon : `str`, optional
+        The hash for the channel's icon.
+    owner_id : `Snowflake`, optional
+        The ID of the creator of the group dm or thread.
+    application_id : `Snowflake`, optional
+        The ID of the application that created the dm if it is bot-created.
+    parent_id : `Snowflake`, optional
+        The ID of the parent of the channel
+
+        Represents the parent category for regular channels and the parent channel for threads.
+    last_pin_timestamp : `str`, optional
+        The time when the last message was pinned.
+    message_count : `int`, optional
+        An approximate count of messages in a thread.
+
+        Stops counting at `50`.
+    member_count : `int`, optional
+        An approximate count of messages in a thread.
+
+        Stops counting at `50`.
+    thread_metadata : `ThreadMetadata`, optional
+        Thread-specific fields not needed by other channels.
+    member : `ThreadMember`, optional
+        Thread member object for the current user if they have joined the thread
+
+        This is only included on certain api endpoints.
+    default_auto_archive_duration : `int`, optional
+        The default archive duration for threads in minutes.
+
+        Can be set to `60`, `1440`, `4320`, `10080`.
+    permissions : `str`, optional
+        Computed permissions for the invoking user in the channel, including overwrites.
+
+        Only included when part of the resolved data received on a slash command interaction.
+    flags : `ChannelFlags`, optional
+        Channel flags combined as a bitfield.
+    """
+
+
+@define(kw_only=True)
+class DMChannel(TextChannel):
+    """
+    Represents a DM channel on Discord.
+
+    ---
+
+    This information is essentially in vogue the same as a
+    text channel, presented with the `TextChannel` object.
+
+    ---
+
+    Attributes
+    ----------
+    id : `Snowflake`
+        The ID of the channel.
+    guild_id : `Snowflake`, optional
+        The ID of the guild.
+        This is nullable due to some Gateway events
+        lacking the data for the ID.
+    position : `int`, optional
+        Sorted position of the channel.
+    permission_overwrites : `list[Overwrite]`, optional
+        Explicit permission overwrites for members and roles.
+    name : `str`, optional
+        The name of the channel.
+
+        A channel name is in-between 1-100 characters.
+    topic : `str`, optional
+        The topic of the channel.
+
+        A channel topic is in-between 1-1024 characters.
+    nsfw : `bool`, optional
+        Whether or not the channel is NSFW. Defaults to `False`.
+    last_message_id : `Snowflake`, optional
+        The ID of the last message sent in this channel
+
+        Can also be a thread if the channel is a forum. May not be an existing or valid message or thread.
+    rate_limit_per_user : `int`, optional
+        Amount of seconds a user has to wait before sending another message
+
+        Can be a number up to 21600. Bots, as well as users with the permission manage_messages or manage_channel, are unaffected.
+    icon : `str`, optional
+        The hash for the channel's icon.
+    owner_id : `Snowflake`, optional
+        The ID of the creator of the group dm or thread.
+    application_id : `Snowflake`, optional
+        The ID of the application that created the dm if it is bot-created.
+    parent_id : `Snowflake`, optional
+        The ID of the parent of the channel
+
+        Represents the parent category for regular channels and the parent channel for threads.
+    last_pin_timestamp : `str`, optional
+        The time when the last message was pinned.
+    message_count : `int`, optional
+        An approximate count of messages in a thread.
+
+        Stops counting at `50`.
+    member_count : `int`, optional
+        An approximate count of messages in a thread.
+
+        Stops counting at `50`.
+    thread_metadata : `ThreadMetadata`, optional
+        Thread-specific fields not needed by other channels.
+    member : `ThreadMember`, optional
+        Thread member object for the current user if they have joined the thread
+
+        This is only included on certain api endpoints.
+    default_auto_archive_duration : `int`, optional
+        The default archive duration for threads in minutes.
+
+        Can be set to `60`, `1440`, `4320`, `10080`.
+    permissions : `str`, optional
+        Computed permissions for the invoking user in the channel, including overwrites.
+
+        Only included when part of the resolved data received on a slash command interaction.
+    flags : `ChannelFlags`, optional
+        Channel flags combined as a bitfield.
+    """
+
+
+@define(kw_only=True)
+class VoiceChannel(Partial, Object):
+    """
+    Represents a voice channel from Discord.
+
+    ---
+
+    This is an event-specific dataclass that is not passed by
+    Discord's Gateway. This will only contain the data relevant
+    to a voice channel -- and just the `id` of it. `type` is
+    dropped as this is already given for the event handler via.
+    specification in the typehinting.
+
+    ---
+
+    Attributes
+    ----------
+    id : `Snowflake`
+        The ID of the channel.
+    guild_id : `Snowflake`, optional
+        The ID of the guild.
+        This is nullable due to some Gateway events
+        lacking the data for the ID.
+    position : `int`, optional
+        Sorted position of the channel.
+    permission_overwrites : `list[Overwrite]`, optional
+        Explicit permission overwrites for members and roles.
+    name : `str`, optional
+        The name of the channel.
+
+        A channel name is in-between 1-100 characters.
+    nsfw : `bool`, optional
+        Whether or not the channel is NSFW. Defaults to `False`.
+    last_message_id : `Snowflake`, optional
+        The ID of the last message sent in this channel
+
+        Can also be a thread if the channel is a forum. May not be an existing or valid message or thread.
+    bitrate : `int`, optional
+        The bitrate of the voice channel.
+    user_limit : `int`, optional
+        The user limit of the voice channel.
+    rate_limit_per_user : `int`, optional
+        Amount of seconds a user has to wait before sending another message
+
+        Can be a number up to 21600. Bots, as well as users with the permission manage_messages or manage_channel, are unaffected.
+    icon : `str`, optional
+        The hash for the channel's icon.
+    owner_id : `Snowflake`, optional
+        The ID of the creator of the group dm or thread.
+    application_id : `Snowflake`, optional
+        The ID of the application that created the dm if it is bot-created.
+    parent_id : `Snowflake`, optional
+        The ID of the parent of the channel
+
+        Represents the parent category for regular channels and the parent channel for threads.
+    last_pin_timestamp : `str`, optional
+        The time when the last message was pinned.
+    rtc_region : `str`, optional
+        The channel's voice region ID if present, set to automatic when left as `None`..
+    video_quality_mode : `VideoQualityMode`, optional
+        The video quality mode of the voice channel.
+    message_count : `int`, optional
+        An approximate count of messages in a thread.
+
+        Stops counting at `50`.
+    member_count : `int`, optional
+        An approximate count of messages in a thread.
+
+        Stops counting at `50`.
+    thread_metadata : `ThreadMetadata`, optional
+        Thread-specific fields not needed by other channels.
+    member : `ThreadMember`, optional
+        Thread member object for the current user if they have joined the thread
+
+        This is only included on certain api endpoints.
+    default_auto_archive_duration : `int`, optional
+        The default archive duration for threads in minutes.
+
+        Can be set to `60`, `1440`, `4320`, `10080`.
+    permissions : `str`, optional
+        Computed permissions for the invoking user in the channel, including overwrites.
+
+        Only included when part of the resolved data received on a slash command interaction.
+    flags : `ChannelFlags`, optional
+        Channel flags combined as a bitfield.
+    """
+
+    id: str | Snowflake = field(converter=Snowflake)
+    """The ID of the channel."""
+    guild_id: str | Snowflake | None = field(default=None, converter=Snowflake)
+    """
+    The ID of the guild.
+
+    This is nullable due to some Gateway events
+    lacking the data for the ID.
+    """
+    position: int | None = field(default=None)
+    """Sorted position of the channel."""
+    permission_overwrites: list[dict] | list[Overwrite] | None = field(default=None)
+    """Explicit permission overwrites for members and roles."""
+    name: str | None = field(default=None)
+    """
+    The name of the channel.
+
+    A channel name is in-between 1-100 characters.
+    """
+    nsfw: bool | None = field(default=False)
+    """Whether or not the channel is NSFW. Defaults to `False`."""
+    last_message_id: str | Snowflake | None = field(converter=Snowflake, default=None)
+    """
+    The ID of the last message sent in this channel.
+
+    Can also be a thread if the channel is a forum. May not be an existing or valid message or thread.
+    """
+    bitrate: int | None = field(default=None)
+    """The bitrate of the voice channel."""
+    user_limit: int | None = field(default=None)
+    """The user limit of the voice channel."""
+    rate_limit_per_user: int | None = field(default=None)
+    """
+    Amount of seconds a user has to wait before sending another message
+
+    Can be a number up to 21600. Bots, as well as users with the permission manage_messages or manage_channel, are unaffected.
+    """
+    icon: str | None = field(default=None)
+    """The hash for the channel's icon."""
+    owner_id: str | Snowflake | None = field(converter=Snowflake, default=None)
+    """The ID of the creator of the group dm or thread."""
+    application_id: str | Snowflake | None = field(converter=Snowflake, default=None)
+    """The ID of the application that created the dm if it is bot-created."""
+    parent_id: str | Snowflake | None = field(converter=Snowflake, default=None)
+    """
+    The ID of the parent of the channel
+
+    Represents the parent category for regular channels and the parent channel for threads.
+    """
+    last_pin_timestamp: str | None = field(default=None)
+    """The time when the last message was pinned."""
+    rtc_region: str | None = field(default=None)
+    """The channel's voice region ID if present, set to automatic when left as `None`."""
+    video_quality_mode: int | VideoQualityMode | None = field(
+        converter=VideoQualityMode, default=None
+    )
+    """The video quality mode of the voice channel."""
+    message_count: int | None = field(default=None)
+    """"
+    The approximated amount of messages in a thread.
+
+    Stops counting at `50`.
+    """
+    member_count: int | None = field(default=None)
+    """
+    The approximated amount of users in a thread.
+
+    Stops counting at `50`.
+    """
+    # TODO: implement Thread Metadata object.
+    thread_metadata: dict | ThreadMetadata | None = field(  # noqa
+        converter=ThreadMetadata, default=None  # noqa
+    )  # noqa
+    """Thread-specific fields not needed by other channels."""
+    # TODO: implement Thread Member object.
+    member: dict | ThreadMember | None = field(converter=ThreadMember, default=None)  # noqa
+    """
+    The thread member representation of the user if they have joined the thread.
+
+    This is only included on certain api endpoints.
+    """
+    default_auto_archive_duration: int | None = field(default=None)
+    """
+    The default archive duration for threads in minutes.
+
+    Can be set to `60`, `1440`, `4320`, `10080`.
+    """
+    permissions: str | None = field(default=None)
+    """
+    The computed permissions for the invoking user in the channel, including any overwrites.
+
+    Only included when part of the resolved data received on a slash command interaction.
+    """
+    flags: int | ChannelFlags | None = field(converter=ChannelFlags, default=None)
+    """Channel flags combined as a bitfield."""
+
+
+@define(kw_only=True)
+class StageChannel(Partial, Object):
+    """
+    Represents a stage channel from Discord.
+
+    ---
+
+    This is an event-specific dataclass that is not passed by
+    Discord's Gateway. This will only contain the data relevant
+    to a stage channel -- and just the `id` of it. `type` is
+    dropped as this is already given for the event handler via.
+    specification in the typehinting.
+
+    ---
+
+    Attributes
+    ----------
+    id : `Snowflake`
+        The ID of the channel.
+    guild_id : `Snowflake`, optional
+        The ID of the guild.
+        This is nullable due to some Gateway events
+        lacking the data for the ID.
+    position : `int`, optional
+        Sorted position of the channel.
+    permission_overwrites : `list[Overwrite]`, optional
+        Explicit permission overwrites for members and roles.
+    name : `str`, optional
+        The name of the channel.
+
+        A channel name is in-between 1-100 characters.
+    bitrate : `int`, optional
+        The bitrate of the voice channel.
+    icon : `str`, optional
+        The hash for the channel's icon.
+    parent_id : `Snowflake`, optional
+        The ID of the parent of the channel
+
+        Represents the parent category for regular channels and the parent channel for threads.
+    rtc_region : `str`, optional
+        The channel's voice region ID if present, set to automatic when left as `None`.
+    permissions : `str`, optional
+        Computed permissions for the invoking user in the channel, including overwrites.
+
+        Only included when part of the resolved data received on a slash command interaction.
+    flags : `ChannelFlags`, optional
+        Channel flags combined as a bitfield.
+    """
+
+    id: str | Snowflake = field(converter=Snowflake)
+    """The ID of the channel."""
+    type: int | ChannelType = field(converter=ChannelType)
+    """The type of the channel."""
+    guild_id: str | Snowflake | None = field(default=None, converter=Snowflake)
+    """
+    The ID of the guild.
+
+    This is nullable due to some Gateway events
+    lacking the data for the ID.
+    """
+    position: int | None = field(default=None)
+    """Sorted position of the channel."""
+    name: str | None = field(default=None)
+    """
+    The name of the channel.
+
+    A channel name is in-between 1-100 characters.
+    """
+    bitrate: int | None = field(default=None)
+    """The bitrate of the voice channel."""
+    icon: str | None = field(default=None)
+    """The hash for the channel's icon."""
+    parent_id: str | Snowflake | None = field(converter=Snowflake, default=None)
+    """
+    The ID of the parent of the channel
+
+    Represents the parent category for regular channels and the parent channel for threads.
+    """
+    permissions: str | None = field(default=None)
+    """
+    The computed permissions for the invoking user in the channel, including any overwrites.
+
+    Only included when part of the resolved data received on a slash command interaction.
+    """
+    flags: int | ChannelFlags | None = field(converter=ChannelFlags, default=None)
+    """Channel flags combined as a bitfield."""
+
+
+@define(kw_only=True)
+class ThreadChannel(Partial, Object):
+    """
+    Represents a thread channel from Discord.
+
+    ---
+
+    This is an event-specific dataclass that is not passed by
+    Discord's Gateway. This will only contain the data relevant
+    to a thread channel -- and just the `id` of it. `type` is
+    dropped as this is already given for the event handler via.
+    specification in the typehinting.
+
+    ---
+
+    Attributes
+    ----------
+    id : `Snowflake`
+        The ID of the channel.
+    guild_id : `Snowflake`, optional
+        The ID of the guild.
+        This is nullable due to some Gateway events
+        lacking the data for the ID.
+    name : `str`, optional
+        The name of the channel.
+
+        A channel name is in-between 1-100 characters.
+    last_message_id : `Snowflake`, optional
+        The ID of the last message sent in this channel
+
+        Can also be a thread if the channel is a forum. May not be an existing or valid message or thread.
+    rate_limit_per_user : `int`, optional
+        Amount of seconds a user has to wait before sending another message
+
+        Can be a number up to 21600. Bots, as well as users with the permission manage_messages or manage_channel, are unaffected.
+    icon : `str`, optional
+        The hash for the channel's icon.
+    owner_id : `Snowflake`, optional
+        The ID of the creator of the group dm or thread.
+    parent_id : `Snowflake`, optional
+        The ID of the parent of the channel
+
+        Represents the parent category for regular channels and the parent channel for threads.
+    message_count : `int`, optional
+        An approximate count of messages in a thread.
+
+        Stops counting at `50`.
+    member_count : `int`, optional
+        An approximate count of messages in a thread.
+
+        Stops counting at `50`.
+    thread_metadata : `ThreadMetadata`, optional
+        Thread-specific fields not needed by other channels.
+    member : `ThreadMember`, optional
+        Thread member object for the current user if they have joined the thread
+
+        This is only included on certain api endpoints.
+    default_auto_archive_duration : `int`, optional
+        The default archive duration for threads in minutes.
+
+        Can be set to `60`, `1440`, `4320`, `10080`.
+    permissions : `str`, optional
+        Computed permissions for the invoking user in the channel, including overwrites.
+
+        Only included when part of the resolved data received on a slash command interaction.
+    flags : `ChannelFlags`, optional
+        Channel flags combined as a bitfield.
+    """
+
+    id: str | Snowflake = field(converter=Snowflake)
+    """The ID of the channel."""
+    guild_id: str | Snowflake | None = field(default=None, converter=Snowflake)
+    """
+    The ID of the guild.
+
+    This is nullable due to some Gateway events
+    lacking the data for the ID.
+    """
+    name: str | None = field(default=None)
+    """
+    The name of the channel.
+
+    A channel name is in-between 1-100 characters.
+    """
+    last_message_id: str | Snowflake | None = field(converter=Snowflake, default=None)
+    """
+    The ID of the last message sent in this channel.
+
+    Can also be a thread if the channel is a forum. May not be an existing or valid message or thread.
+    """
+    rate_limit_per_user: int | None = field(default=None)
+    """
+    Amount of seconds a user has to wait before sending another message
+
+    Can be a number up to 21600. Bots, as well as users with the permission manage_messages or manage_channel, are unaffected.
+    """
+    icon: str | None = field(default=None)
+    """The hash for the channel's icon."""
+    owner_id: str | Snowflake | None = field(converter=Snowflake, default=None)
+    """The ID of the creator of the group dm or thread."""
+    parent_id: str | Snowflake | None = field(converter=Snowflake, default=None)
+    """
+    The ID of the parent of the channel
+
+    Represents the parent category for regular channels and the parent channel for threads.
+    """
+    """The video quality mode of the voice channel."""
+    message_count: int | None = field(default=None)
+    """"
+    The approximated amount of messages in a thread.
+
+    Stops counting at `50`.
+    """
+    member_count: int | None = field(default=None)
+    """
+    The approximated amount of users in a thread.
+
+    Stops counting at `50`.
+    """
+    # TODO: implement Thread Metadata object.
+    thread_metadata: dict | ThreadMetadata | None = field(  # noqa
+        converter=ThreadMetadata, default=None  # noqa
+    )  # noqa
+    """Thread-specific fields not needed by other channels."""
+    # TODO: implement Thread Member object.
+    member: dict | ThreadMember | None = field(converter=ThreadMember, default=None)  # noqa
+    """
+    The thread member representation of the user if they have joined the thread.
+
+    This is only included on certain api endpoints.
+    """
+    default_auto_archive_duration: int | None = field(default=None)
+    """
+    The default archive duration for threads in minutes.
+
+    Can be set to `60`, `1440`, `4320`, `10080`.
+    """
+    permissions: str | None = field(default=None)
+    """
+    The computed permissions for the invoking user in the channel, including any overwrites.
+
+    Only included when part of the resolved data received on a slash command interaction.
+    """
+    flags: int | ChannelFlags | None = field(converter=ChannelFlags, default=None)
+    """Channel flags combined as a bitfield."""
 
 
 @define()

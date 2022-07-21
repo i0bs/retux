@@ -111,9 +111,9 @@ class Partial:
     data.
     """
 
-    def __init__(self, **kwargs):
-        for attr in kwargs:
-            self.__setattr__(attr, kwargs[attr])
+    def __init__(self, payload: dict):
+        for attr in payload:
+            self.__setattr__(attr, payload[attr])
 
 
 @define(kw_only=True)
