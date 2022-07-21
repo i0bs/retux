@@ -4,7 +4,6 @@ from attrs import define, field
 from retux.client.resources.abc import Snowflake, Object, Partial
 from retux.client.resources.application import Application
 from retux.client.resources.user import User
-from retux.client.resources.channel import Channel
 from retux.utils.converters import optional_c, list_c
 
 __all__ = (
