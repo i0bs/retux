@@ -1,7 +1,11 @@
+from datetime import datetime
 from enum import IntEnum, IntFlag
 from attrs import define, field
 from retux.client.resources.abc import Snowflake, Object, Partial
+from retux.client.resources.application import Application
 from retux.client.resources.user import User
+from retux.client.resources.channel import Channel
+from retux.utils.converters import optional_c, list_c
 
 __all__ = (
     "Channel",
@@ -263,7 +267,30 @@ class MessageFlags(IntFlag):
     """This message failed to mention some roles and add their members to the thread."""
 
 
-@define()
+@define(kw_only=True)
+class Reaction:
+    """
+    Represents a reaction to a message from Discord.
+    
+    Attributes
+    ----------
+    count : `int`
+        Number of reactions using the emoji.
+    me : `bool`
+        Whether or not the current user has reacted using this emoji.
+    emoji : `EmojiPartial`
+        Information about the emoji of the reaction.
+    """
+    count: int = field()
+    """Number of reactions using the emoji."""
+    me: bool = field()
+    """Whether or not the current user has reacted using this emoji."""
+    # TODO: Implement Emojis
+    # emoji: EmojiPartial = field(converter=Emoji)
+    """Information about the emoji of the reaction."""
+
+
+@define(kw_only=True)
 class Overwrite(Object):
     """
     Represents a permission overwrite from Discord.
@@ -296,7 +323,7 @@ class Overwrite(Object):
     """The bit set representing the overwrite's denied permissions."""
 
 
-@define()
+@define(kw_only=True)
 class MessageActivity:
     """
     Represents a message activity structure from Discord.
@@ -315,7 +342,39 @@ class MessageActivity:
     """The ID of a party from a rich presence event."""
 
 
-@define()
+@define(kw_only=True)
+class MessageReference:
+    """
+    Represents a reference to a message from Discord.
+    
+    Attributes
+    ----------
+    message_id : `Snowflake`, optional
+        The ID of the originating message.
+    channel_id : `Snowflake`, optional
+        The ID of the originating message's channel.        
+    guild_id : `Snowflake`, optional
+        The ID of the originating message's guild.
+    fail_if_not_exists : `bool`
+        Whether or not to error if the referenced doesn't exist.
+    
+        If `False`, sends as a normal, non-reply message.
+    """
+    message_id: str | Snowflake | None = field(converter=optional_c(Snowflake), defualt=None)
+    """The ID of the originating message."""
+    channel_id: str | Snowflake | None = field(converter=optional_c(Snowflake), defualt=None)
+    """The ID of the originating message's channel."""
+    guild_id: str | Snowflake | None = field(converter=optional_c(Snowflake), defualt=None)
+    """The ID of the originating message's guild."""
+    fail_if_not_exists: bool | None = field(default=True)
+    """
+    Whether or not to error if the referenced doesn't exist.
+    
+    If `False`, sends as a normal, non-reply message.
+    """
+
+
+@define(kw_only=True)
 class FollowedChannel:
     """
     Represents a followed channel from Discord.
@@ -332,6 +391,130 @@ class FollowedChannel:
     """The ID of the source channel."""
     webhook_id: str | Snowflake = field(converter=Snowflake)
     """The ID of the created target webhook."""
+
+
+@define(kw_only=True)
+class ChannelMention(Object):
+    """
+    Represents a channel mentioned in a message from Discord.
+
+    Attributes
+    ----------
+    id : `Snowflake`
+        The ID of the channel being mentioned.
+    guild_id : `Snowflake`
+        The ID of the guild containing the channel being mentioned.
+    type : `ChannelType`
+        The type of the channel being mentioned.
+    name : `str`
+        The name of the channel being mentioned.
+    """
+    id: str | Snowflake = field(converter=Snowflake)
+    """The ID of the channel being mentioned."""
+    guild_id: str | Snowflake = field(converter=Snowflake)
+    """The ID of the guild containing the channel being mentioned."""
+    type: int | ChannelType = field(converter=ChannelType)
+    """The type of the channel being mentioned."""
+    name: str = field()
+    """The name of the channel being mentioned."""
+
+
+@define(kw_only=True)
+class ThreadMetadata:
+    """
+    Represents a thread metadata structure from Discord.
+
+    Attributes
+    ----------
+    archived : `bool`
+        Whether or not the thread is currently archived.
+    auto_archive_duration : `int`
+        The amount of minutes after the last message was sent before Discord automatically archives the thread.
+    archive_timestamp : `datetime`
+        When the thread's archive status last changed, used for calculating recent activity.
+    locked : `bool`
+        Whether or not the thread is locked.
+    
+        If a thread is locked, only users with MANAGE_THREADS permissions can unarchive it.
+    invitable : `bool`
+        Whether or not non-moderators can add other non-moderators to a thread.
+    
+        Only availible an private threads.
+    create_timestamp: `datetime`, optional
+        When the thread was created.
+    
+        Always populated unless the thread was created.
+    """
+
+    archived: bool = field()
+    """Whether or not the thread is currently archived."""
+    auto_archive_duration: int = field()
+    """The amount of minutes after the last message was sent before Discord automatically archives the thread."""
+    archive_timestamp: str | datetime = field(converter=datetime.fromisoformat)
+    """When the thread's archive status last changed, used for calculating recent activity."""
+    locked: bool = field()
+    """
+    Whether or not the thread is locked.
+    
+    If a thread is locked, only users with MANAGE_THREADS permissions can unarchive it.
+    """
+    invitable: bool = field()
+    """
+    Whether or not non-moderators can add other non-moderators to a thread.
+    
+    Only availible an private threads.
+    """
+    create_timestamp: str | datetime | None = field(converter=optional_c(datetime.fromisoformat), default=None)
+    """
+    When the thread was created.
+    
+    Always populated unless the thread was created.
+    """
+
+
+@define(kw_only=True)
+class ThreadMember(Object):
+    """
+    Represents a thread member structure from Discord.
+
+    Attributes
+    ----------
+    id : `Snowflake`
+        The ID of the thread.
+
+        This field is omitted on the member sent within each thread in GUILD_CREATE.
+    user_id : `Snowflake`
+        The ID of the user.
+
+        This field is omitted on the member sent within each thread in GUILD_CREATE.
+    join_timestamp : `datetime`
+        When the user joined the thread.
+    flags : `int`
+        The flags for any user-thread settings.
+
+        This is not needed by the bot; it is only used for client notifications.
+    """
+
+    id: str | Snowflake | None = field(converter=optional_c(Snowflake))
+    """
+    The ID of the thread.
+    
+    This field is omitted on the member sent within each thread in GUILD_CREATE.
+    """
+    user_id: str | Snowflake = field(converter=Snowflake)
+    """
+    The ID of the user.
+    
+    This field is omitted on the member sent within each thread in GUILD_CREATE.
+    """
+    join_timestamp: str | datetime = field(converter=datetime.fromisoformat)
+    """When the user joined the thread."""
+    flags: int = field()
+    """
+    The flags for any user-thread settings.
+
+    This is not needed by the bot; it is only used for client notifications.
+    """
 
 
 @define(kw_only=True)
@@ -1175,7 +1358,7 @@ class ThreadChannel(Partial, Object):
     """Channel flags combined as a bitfield."""
 
 
-@define()
+@define(kw_only=True)
 class Channel(Object):
     """
     Represents a channel from Discord.
@@ -1365,3 +1548,361 @@ class Channel(Object):
     """
     flags: int | ChannelFlags | None = field(converter=ChannelFlags, default=None)
     """Channel flags combined as a bitfield."""
+
+
+@define(kw_only=True)
+class _EmbedMedia:
+    """
+    Represents an embed thumbnail, video or image from Discord.
+
+    Attributes
+    ----------
+    url : `str`, optional
+        The url to the source of the media.
+
+        The url is only needed for non-video contents.
+    proxied_url : `str`, optional
+        A proxied url of the media.
+    height : `int`, optional
+        The height of the media.
+    width : `int`, optional
+        The width of the media.
+    """
+    url: str | None = field(default=None)
+    """
+    The url to the source of the media.
+    
+    The url is only needed for non-video contents.
+    """
+    proxy_url: str | None = field(default=None)
+    """A proxied url of the media."""
+    height: int | None = field(default=None)
+    """The height of the media."""
+    width: int | None = field(default=None)
+    """The width of the media."""
+
+
+@define(kw_only=True)
+class _EmbedProvider:
+    """
+    Represents the provider of an embed from Discord.
+
+    Attributes
+    ----------
+    name : `str`, optional
+        The of the provider.
+    url : `str`, optional
+        The url of the provider.
+    """
+    name: str | None = field(default=None)
+    """The of the provider."""
+    url: str | None = field(default=None)
+    """The url of the provider."""
+
+
+@define(kw_only=True)
+class _EmbedAuthor:
+    """
+    Represents the author of an embed from Discord.
+
+    Attributes
+    ----------
+    name : `str`, optional
+        The name of the author.
+    url : `str`, optional
+        The url of the author.
+    icon_url : `str`, optional
+        The url of author's icon.
+    proxy_icon_url : `str`, optional
+        The proxied url of the author's icon.
+    """
+    name: str | None = field(default=None)
+    """The name of the author."""
+    url: str | None = field(default=None)
+    """The url of the author."""
+    icon_url: str | None = field(default=None)
+    """The url of author's icon."""
+    proxy_icon_url: str | None = field(default=None)
+    """The proxied url of the author's icon."""
+
+
+@define(kw_only=True)
+class _EmbedFooter:
+    """
+    Represents the footer of an embed from Discord.
+
+    Attributes
+    ----------
+    text : `str`, optional
+        The footer text of an embed.
+    icon_url : `str`, optional
+        The url of the footer icon.
+
+        Only supports http(s) and attachments.
+    proxy_icon_url : `str`, optional
+        A proxied url of the footer icon.
+    """
+    text: str | None = field(default=None)
+    """The footer text of an embed."""
+    icon_url: str | None = field(default=None)
+    """
+    The url of the footer icon.
+
+    Only supports http(s) and attachments.
+    """
+    proxy_icon_url: str | None = field(default=None)
+    """A proxied url of the footer icon."""
+
+
+@define(kw_only=True)
+class _EmbedField:
+    """
+    Represents a field of an embed from Discord.
+
+    Attributes
+    ----------
+    name : `str`
+        The name of the embed field.
+    value : `str`
+        The value of the embed field.
+    inline : `bool`
+        Whether or not the embed field is placed inline with other embed fields.
+    """
+    name: str = field()
+    """The name of the embed field."""
+    value: str = field()
+    """The value of the embed field."""
+    inline: bool | None = field(default=None)
+    """Whether or not the embed field is placed inline with other embed fields."""
+
+
+@define(kw_only=True, frozen=True)
+class Embed:
+    """
+    Represnts a message embed from Discord.
+    
+    Attributes
+    ----------
+    title : `str`, optional
+        The title of the embed.
+    type : `str`, optional
+        The type of the embed.
+    
+        This will always be `"rich"` for webhook embeds.
+    description : `str`, optional
+        The description of the embed.
+    url : `str`, optional
+        The url of the embed. This makes the title of the event a hyperlink.
+    timestamp : `str`, optional
+        The timestamp of the embed. This appears at the bottom.
+    color : `Color`, optional
+        The color of the embed.
+    footer : `_EmbedFooter`, optional
+        The footer of the embed.
+    image : `_EmbedMedia`, optional
+        The image of the embed. This is a large image displayed under the title.
+    thumbnail : `_EmbedMedia`, optional
+        The thumbnail of the embed. This is displayed as a small image on the embed.
+    video : `_EmbedMedia`, optional
+        The video of the embed.
+    
+        This cannot be used for embeds from bots.
+    provider : `_EmbedMedia`, optional
+        The provider of the embed.
+    
+        This cannot be used for embeds from bots.
+    author : `_EmbedAuthor`, optional
+        The author of the embed.
+    fields : `list[_EmbedField]`, optional
+        The fields of the embed.
+    """
+
+    title: str | None = field(default=None)
+    """The title of the embed."""
+    type: str | None = field(default=None)
+    """
+    The type of the embed.
+    
+    This will always be `"rich"` for webhook embeds.
+    """
+    description: str | None = field(default=None)
+    """The description of the embed."""
+    url: str | None = field(default=None)
+    """The url of the embed. This makes the title of the event a hyperlink."""
+    timestamp: str | datetime | None = field(converter=optional_c(datetime.fromisoformat), default=None)
+    """The timestamp of the embed. This appears at the bottom."""
+    # TODO: implement Color abc
+    # color: int | Color | None = field(converter=optional_c(Color), default=None)
+    """The color of the embed."""
+    footer: dict | _EmbedFooter | None = field(converter=optional_c(_EmbedFooter), default=None)
+    """The footer of the embed."""
+    image: dict | _EmbedMedia | None = field(converter=optional_c(_EmbedMedia), default=None)
+    """The image of the embed. This is a large image displayed under the title."""
+    thumbnail: dict | _EmbedMedia | None = field(converter=optional_c(_EmbedMedia), default=None)
+    """The thumbnail of the embed. This is displayed as a small image on the embed."""
+    video: dict | _EmbedMedia | None = field(converter=optional_c(_EmbedMedia), default=None)
+    """
+    The video of the embed.
+    
+    This cannot be used for embeds from bots.
+    """
+    provider: dict | _EmbedProvider | None = field(converter=optional_c(_EmbedProvider), default=None)
+    """
+    The provider of the embed.
+    
+    This cannot be used for embeds from bots.
+    """
+    author: dict | _EmbedAuthor | None = field(converter=optional_c(_EmbedAuthor), default=None)
+    """The author of the embed."""
+    fields: list[dict] | list[_EmbedField] | None = field(converter=optional_c(list_c(_EmbedField), default=None))
+    """The fields of the embed."""
+
+
+@define(kw_only=True)
+class Message(Object):
+    """
+    Represents a message from Discord.
+    
+    Attributes
+    ----------
+    id : `Snowflake`
+        The ID of the message.
+    channel_id : `Snowflake`
+        The ID of the channel containing the message.
+    author : `User`
+        The author of the message.
+    content : `str`
+        The content of the message.
+    timestamp : `datetime`
+        When the message was sent.
+    edited_timestamp : `datetime`, optional
+        When the message was last edited.
+    tts : `bool`
+        Whether or not this was a Text to Speech message.
+    mention_everyone : `bool`
+        Whether or not this message mentions everyone.
+    mentions : `list[User]`
+        Users specifically mentioned in this message.
+    mention_roles : `list[Role]`
+        Roles specifically mentioned in this message.
+    mention_channels : `list[ChannelMention]`, optional
+        Channels specifically mentioned in this message.
+    attachments : `list[Attachment]`, optional
+        The attachments of the message.
+    embeds : `list[Embed]`
+        The embeds of the message.
+    reactions : `list[Reaction]`, optional
+        The reactions to the message.
+    nonce : `int | str`, optional
+        Used for validating whether a message has been sent.
+    pinned : `bool`
+        Whether or not a message is pinned.
+    webhook_id : `Snowflake`, optional
+        The ID of the message's webhook, if the message was generated by a webhook.
+    type : `MessageType`
+        The type of the message.
+    activity : `MessageActivity`, optional
+        The activity of the message.
+
+        Sent with Rich Presence related chat embeds.
+    application : `Application`, optional
+        The application of the message's activity.
+
+        Sent with Rich Presence related chat embeds.
+    application_id : `Snowflake`, optional
+        The ID of the application.
+    
+        Sent if the message is an interactions or an application-owned webhook.
+    message_reference : `MessageReference`, optional
+        The source of a crosspost or the source of activity related to channel follows.
+    flags : `MessageFlags`, optional
+        Bitwise values representing a channel's flags.
+    referenced_message : `Message`, optional
+        The message associated with a message_reference.
+    interaction : `Interaction`, optional
+        The message's interaction if it is a response to an interaction.
+    thread : `ThreadChannel`, optional
+        The thread of the message, if it is the message that started a thread.
+    components : `list[Component]`, optional
+        The components on a message.
+    sticker_items : `list[StickerItem]`, optional
+        The items used to begin rendering the message's stickers.
+    stickers : `list[Sticker]`, optional
+        The stickers of a message.
+    """
+    id: str | Snowflake = field(converter=Snowflake)
+    """The ID of the message."""
+    channel_id: str | Snowflake = field(converter=Snowflake)
+    """The ID of the channel containing the message."""
+    author: dict | User = field(converter=User)
+    """The author of the message."""
+    content: str = field()
+    """The content of the message."""
+    timestamp: str | datetime = field(converter=datetime.fromisoformat)
+    """When the message was sent."""
+    edited_timestamp: str | datetime | None = field(converter=optional_c(datetime.fromisoformat), default=None)
+    """When the message was last edited."""
+    tts: bool = field()
+    """Whether or not this was a Text to Speech message."""
+    mention_everyone: bool = field()
+    """Whether or not this message mentions everyone."""
+    mentions: list[dict] | list[User] = field(converter=list_c(User))
+    """Users specifically mentioned in this message."""
+    # TODO: Implement roles
+    # mention_roles: list[dict] | list[Role] = field(converter=list_c(Role))
+    """Roles specifically mentioned in this message."""
+    mention_channels: list[dict] | list[ChannelMention] | None = field(converter=optional_c(list_c(ChannelMention)), default=None)
+    """Channels specifically mentioned in this message."""
+    # TODO: Implement attachments
+    # attachments: list[dict] | list[Role] = field(converter=list_c(Attachment))
+    """The attachments of the message."""
+    embeds: list[dict] | list[Embed] = field(converter=list_c(Embed))
+    """The embeds of the message."""
+    reactions: list[dict] | list[Reaction] | None = field(converter=optional_c(list_c(Reaction)), default=None)
+    """The reactions to the message."""
+    nonce: int | str | None = field(default=None)
+    """Used for validating whether a message has been sent."""
+    pinned: bool = field()
+    """Whether or not a message is pinned."""
+    webhook_id: str | Snowflake | None = field(converter=optional_c(Snowflake), default=None)
+    """The ID of the message's webhook, if the message was generated by a webhook."""
+    type: int | MessageType = field(converter=MessageType)
+    """The type of the message."""
+    activity: dict | MessageActivity | None = field(converter=optional_c(MessageActivity), default=None)
+    """
+    The activity of the message.
+
+    Sent with Rich Presence related chat embeds.
+    """
+    application: dict | Application | None = field(converter=optional_c(Application), default=None)
+    """
+    The application of the message's activity.
+
+    Sent with Rich Presence related chat embeds.
+    """
+    application_id: str | Snowflake | None = field(converter=optional_c(Snowflake), default=None)
+    """
+    The ID of the application.
+    
+    Sent if the message is an interactions or an application-owned webhook.
+    """
+    message_reference: dict | MessageReference | None = field(converter=optional_c(MessageReference), default=None)
+    """The source of a crosspost or the source of activity related to channel follows."""
+    flags: int | MessageFlags | None = field(converter=optional_c(MessageFlags), default=None)
+    """Bitwise values representing a channel's flags."""
+    referenced_message: dict | "Message" | None = field(default=None) # TODO: Implement recursive converters
+    """The message associated with a message_reference."""
+    # TODO: Implement interactions
+    # interaction: dict | Interaction | None = field(converter=optional_c(Interaction), default=None)
+    """The message's interaction if it is a response to an interaction."""
+    thread: dict | ThreadChannel | None = field(converter=optional_c(Channel), default=None)
+    """The thread of the message, if it is the message that started a thread."""
+    # TODO: Implement components
+    # components: list[dict] | list[Component] | None = field(converter=optional_c(list_c(Component)), default=None)
+    """The components on a message."""
+    # TODO: Implement stickers
+    # sticker_items: list[dict] | list[StickerItem] | None = field(converter=optional_c(list_c(StickerItem)))
+    """The items used to begin rendering the message's stickers."""
+    # TODO: Implement stickers
+    # stickers: list[dict] | list[Sticker] | None = field(converter=optional_c(list_c(Sticker)))
+    """The stickers of a message."""
