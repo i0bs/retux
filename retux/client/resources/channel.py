@@ -2,9 +2,9 @@ from datetime import datetime
 from enum import IntEnum, IntFlag
 from attrs import define, field
 from retux.client.resources.abc import Snowflake, Object, Partial
-from retux.client.resources.application import Application
+from .application import Application
 from retux.client.resources.user import User
-from retux.utils.converters import optional_c, list_c
+from ...utils.converters import optional_c, list_c
 
 __all__ = (
     "Channel",
