@@ -516,7 +516,7 @@ class TextChannel(Partial, Object):
 @define(kw_only=True)
 class AnnouncementChannel(TextChannel):
     """
-    Represents a DM channel on Discord.
+    Represents an announcement channel on Discord.
 
     ---
 
