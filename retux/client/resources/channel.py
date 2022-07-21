@@ -23,6 +23,11 @@ __all__ = (
     "ChannelMention",
     "ThreadMetadata",
     "ThreadMember",
+    "_EmbedMedia",
+    "_EmbedProvider",
+    "_EmbedAuthor",
+    "_EmbedFooter",
+    "_EmbedField",
     "Embed",
     "Message"
 )
