@@ -1901,15 +1901,15 @@ class Message(Object):
     """The message associated with a message_reference."""
     # TODO: Implement interactions
     # interaction: dict | Interaction | None = field(converter=optional_c(Interaction), default=None)
-    """The message's interaction if it is a response to an interaction."""
+    """# The message's interaction if it is a response to an interaction."""
     thread: dict | ThreadChannel | None = field(converter=optional_c(Channel), default=None)
-    """The thread of the message, if it is the message that started a thread."""
+    """# The thread of the message, if it is the message that started a thread."""
     # TODO: Implement components
     # components: list[dict] | list[Component] | None = field(converter=optional_c(list_c(Component)), default=None)
-    """The components on a message."""
+    """# The components on a message."""
     # TODO: Implement stickers
     # sticker_items: list[dict] | list[StickerItem] | None = field(converter=optional_c(list_c(StickerItem)))
-    """The items used to begin rendering the message's stickers."""
+    """# The items used to begin rendering the message's stickers."""
     # TODO: Implement stickers
     # stickers: list[dict] | list[Sticker] | None = field(converter=optional_c(list_c(Sticker)))
-    """The stickers of a message."""
+    """# The stickers of a message."""
