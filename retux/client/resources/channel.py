@@ -1908,7 +1908,7 @@ class Message(Object):
     # TODO: Implement Interaction object.
     # interaction: dict | Interaction | None = field(converter=optional_c(Interaction), default=None)
     """# The message's interaction if it is a response to an interaction."""
-    thread: dict | ThreadChannel | None = field(converter=optional_c(Channel), default=None)
+    thread: dict | ThreadChannel | None = field(converter=optional_c(ThreadChannel), default=None)
     """# The thread of the message, if it is the message that started a thread."""
     # TODO: Implement Component object.
     # components: list[dict] | list[Component] | None = field(converter=optional_c(list_c(Component)), default=None)
