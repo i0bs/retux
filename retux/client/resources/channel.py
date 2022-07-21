@@ -1867,7 +1867,7 @@ class Message(Object):
     mention_channels: list[dict] | list[ChannelMention] | None = field(converter=optional_c(list_c(ChannelMention)), default=None)
     """Channels specifically mentioned in this message."""
     # TODO: Implement Attachment object
-    # attachments: list[dict] | list[Role] = field(converter=list_c(Attachment))
+    # attachments: list[dict] | list[Attachment] = field(converter=list_c(Attachment))
     """The attachments of the message."""
     embeds: list[dict] | list[Embed] = field(converter=list_c(Embed))
     """The embeds of the message."""
