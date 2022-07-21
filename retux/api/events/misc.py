@@ -2,6 +2,7 @@ from datetime import datetime
 from attrs import define, field
 
 from ...client.resources.abc import Snowflake
+from ...client.resources.guild import Member
 from ...utils.converters import optional_c
 
 
@@ -29,6 +30,8 @@ class TypingStart:
 
         This will only appear when a user is typing
         outside of a DM.
+    member : `Member`, optional
+        The member who started typing.
     """
 
     channel_id: str | Snowflake = field(converter=Snowflake)
@@ -44,5 +47,5 @@ class TypingStart:
     This will only appear when a user is typing
     outside of a DM.
     """
-    # TODO: implement Member object.
-    # member: Member = field(converter=Member, default=None)
+    member: dict | Member | None = field(converter=optional_c(Member), default=None)
+    """The member who started typing."""
