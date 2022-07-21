@@ -367,11 +367,11 @@ class MessageReference:
     
         If `False`, sends as a normal, non-reply message.
     """
-    message_id: str | Snowflake | None = field(converter=optional_c(Snowflake), defualt=None)
+    message_id: str | Snowflake | None = field(converter=optional_c(Snowflake), default=None)
     """The ID of the originating message."""
-    channel_id: str | Snowflake | None = field(converter=optional_c(Snowflake), defualt=None)
+    channel_id: str | Snowflake | None = field(converter=optional_c(Snowflake), default=None)
     """The ID of the originating message's channel."""
-    guild_id: str | Snowflake | None = field(converter=optional_c(Snowflake), defualt=None)
+    guild_id: str | Snowflake | None = field(converter=optional_c(Snowflake), default=None)
     """The ID of the originating message's guild."""
     fail_if_not_exists: bool | None = field(default=True)
     """
