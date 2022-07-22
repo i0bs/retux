@@ -3,7 +3,7 @@ from enum import IntEnum, IntFlag
 from attrs import define, field
 from retux.client.resources.abc import Snowflake, Object, Partial
 from .application import Application
-from retux.client.resources.user import User
+from .user import User
 from ...utils.converters import optional_c, list_c
 
 __all__ = (
