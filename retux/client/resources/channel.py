@@ -29,6 +29,7 @@ __all__ = (
     "_EmbedFooter",
     "_EmbedField",
     "Embed",
+    "Attachment",
     "Message"
 )
 
