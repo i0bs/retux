@@ -1777,6 +1777,92 @@ class Embed:
 
 
 @define(kw_only=True)
+class Attachment(Object):
+    """
+    Represents an attachment from Discord.
+
+    Attributes
+    ----------
+    id : `Snowflake`
+        The ID of the attachment.
+    filename : `str`, optional
+        The name of the attached file.
+    
+        Always provided by Discord. Optional for bot use.
+    description : `str`, optional
+        The description of the attached file.
+    content_type : `str`, optional
+        The type of media attached.
+    size : `int`, optional
+        The size of the attached file in bytes.
+    
+        Always provided by Discord. Optional for bot use.
+    url : `str`, optional
+        The source URL of the file.
+    
+        Always provided by Discord. Optional for bot use.
+    proxy_url : `str`, optional
+        A proxied URL of the file.
+    
+        Always provided by Discord. Optional for bot use.
+    height : `int`, optional
+        The height of the file.
+    
+        This is only used for images.
+    width : `int`, optional
+        The height of the file.
+    
+        This is only used for images.
+    ephemeral : `bool`, optional
+        Whether or not the attachment is ephemeral.
+    """
+    id: str | Snowflake = field(converter=Snowflake)
+    """The ID of the attachment."""
+    filename: str | None = field(default=None)
+    """
+    The name of the attached file.
+    
+    Always provided by Discord. Optional for bot use.
+    """
+    description: str | None = field(default=None)
+    """The description of the attached file."""
+    content_type: str | None = field(default=None)
+    """The type of media attached."""
+    size: int | None = field(default=None)
+    """
+    The size of the attached file in bytes.
+    
+    Always provided by Discord. Optional for bot use.
+    """
+    url: str | None = field(default=None)
+    """
+    The source URL of the file.
+    
+    Always provided by Discord. Optional for bot use.
+    """
+    proxy_url: str | None = field(default=None)
+    """
+    A proxied URL of the file.
+    
+    Always provided by Discord. Optional for bot use.
+    """
+    height: int | None = field(default=None)
+    """
+    The height of the file.
+    
+    This is only used for images.
+    """
+    width: int | None = field(default=None)
+    """
+    The height of the file.
+    
+    This is only used for images.
+    """
+    ephemeral: bool | None = field(default=None)
+    """Whether or not the attachment is ephemeral."""
+
+
+@define(kw_only=True)
 class Message(Object):
     """
     Represents a message from Discord.
