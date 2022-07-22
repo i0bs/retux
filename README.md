@@ -70,9 +70,3 @@ and disagree to implementation.
 
 There is currently **no set date for version 1.0**. When a
 release date has been decided upon, we will let you know. :)
-
-## Social media
-
-Please consider checking out these social media links to get involved.
-
-- [Discord](https://dsc.gg/retux)
