@@ -1,9 +1,9 @@
 # retux
 
-![PyPI](https://img.shields.io/pypi/v/retux?style=plastic)
-![Python version](https://img.shields.io/pypi/pyversions/retux.svg?style=plastic)
-![Code style](https://img.shields.io/badge/code%20style-black-black?style=plastic)
-![Discord](https://img.shields.io/discord/993549800911941672?style=plastic)
+[![PyPI](https://img.shields.io/pypi/v/retux?style=plastic)](https://pypi.org/project/retux)
+[![Python version](https://img.shields.io/pypi/pyversions/retux.svg?style=plastic)](#)
+[![Code style](https://img.shields.io/badge/code%20style-black-black?style=plastic)](#)
+[![Discord](https://img.shields.io/discord/993549800911941672?style=plastic)](https://dsc.gg/retux)
 
 A Discord API wrapper built with good intentions.
 
@@ -43,9 +43,8 @@ accessible set of tools and containers.
 *Recycle current existing code paradigms elsewhere, so you can borrow assets off of one
 another.*
 
-Developers **love** it when they can reuse and recycle existing code for elsewhere.
-A Discord library should be no different and open to giving the bot developer as much artistic
-freedom as they so desire.
+Developers **love** the ability to reuse and recycle existing code elsewhere. A Discord library should be no
+different and open to giving the bot developer as much artistic freedom as they so desire.
 
 ### Safe.
 
@@ -55,8 +54,8 @@ chugging along.*
 As society makes more technological advancements, it's become a concern of my own that any
 dependency, even a Discord library should consider looking into the possibility of ensuring
 runtime safety. With retux, your end-user facing code is generously checked and potentially
-sanitised if inputted wrongly to the API. You should be able to make code *work* and not 
-follow strictly by the playbook for technical correctness.
+sanitised if inputted wrongly to the API. You should be able to make code *work*, not 
+fight for technical correctness.
 
 ## Is this another fork?
 
