@@ -5,6 +5,7 @@ from aenum import IntEnum
 from attrs import define, field
 
 from .user import User, UserFlags, UserPremiumType
+from .emoji import Emoji
 
 from .abc import Object, Partial, Snowflake
 
@@ -50,10 +51,9 @@ class WelcomeScreenChannel:
     emoji_name: str | None = field(default=None)
     """The name of the emoji, if present."""
 
-    # TODO: implement Emoji object.
-    # @property
-    # def emoji(self) -> Emoji:
-    #     return Emoji(id=emoji_id, name=emoji_name)
+    @property
+    def emoji(self) -> Emoji:
+        return Emoji(id=self.emoji_id, name=self.emoji_name)
 
 
 @define(kw_only=True)
