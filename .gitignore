@@ -1,6 +1,7 @@
 # Testing files
 .env
 _test.py
+.vscode
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
@@ -27,6 +28,7 @@ wheels/
 pip-wheel-metadata/
 share/python-wheels/
 *.egg-info/
+*.egg-info
 .installed.cfg
 *.egg
 MANIFEST
@@ -73,7 +75,7 @@ instance/
 .scrapy
 
 # Sphinx documentation
-docs/_build/
+docs/_*
 
 # PyBuilder
 target/
@@ -106,10 +108,14 @@ celerybeat.pid
 *.sage.py
 
 # Environments
+.vscode/
+.vscode
 .env
 .venv
 env/
 venv/
+venv
+env
 ENV/
 env.bak/
 venv.bak/

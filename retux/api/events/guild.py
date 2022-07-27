@@ -1,3 +1,4 @@
+from ...client.resources.guild import Guild
 from ...const import MISSING
 
 
@@ -8,10 +9,10 @@ class _GuildEvents:
     """
 
     @classmethod
-    def lookup(cls, name: str) -> dict | MISSING:
+    def lookup(cls, name: str, data: dict) -> dict | MISSING:
         match name:
             case "GUILD_CREATE":
-                ...
+                return Guild
             case "GUILD_UPDATE":
                 ...
             case "GUILD_DELETE":

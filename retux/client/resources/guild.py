@@ -1,7 +1,7 @@
 from datetime import datetime
 from enum import IntFlag
 from typing import Any
-from aenum import IntEnum
+from enum import IntEnum
 from attrs import define, field
 
 from .user import User, UserFlags, UserPremiumType
@@ -195,7 +195,7 @@ class VerificationLevel(IntEnum):
     """Guild members must have their phone number verified."""
 
 
-@define(repr=False, kw_only=True)
+@define(repr=False)
 class UnavailableGuild(Partial, Object):
     """
     Represents an unavailable guild from Discord.

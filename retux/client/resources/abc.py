@@ -96,7 +96,7 @@ class Snowflake:
         return int(self._snowflake) & 0xFFF
 
 
-@define(init=False, slots=False)
+@define()
 class Partial:
     """
     Represents partial information to a resource from Discord.
@@ -110,10 +110,6 @@ class Partial:
     class lives to serve as a way to better typehint this incomplete
     data.
     """
-
-    def __init__(self, payload: dict):
-        for attr in payload:
-            self.__setattr__(attr, payload[attr])
 
 
 @define(kw_only=True)

@@ -393,8 +393,7 @@ class GatewayClient(GatewayProtocol):
                 await self._resume()
             case _GatewayOpCode.DISPATCH:
                 if payload.name not in ["RESUMED", "READY"]:
-                    resource = _EventTable.lookup(payload.name)
-                    print(resource)
+                    resource = _EventTable.lookup(payload.name, payload.data)
                     await self._dispatch(payload.name, resource, **payload.data)
         match payload.name:
             case "RESUMED":
@@ -410,7 +409,7 @@ class GatewayClient(GatewayProtocol):
                 )
                 await self._dispatch("READY", Ready, **payload.data)
 
-    async def _hook(self, bot: "Bot"):  # noqa
+    async def _hook(self, bot: "Bot") -> object:  # noqa
         """
         Hooks the Gateway to a bot for event dispatching.
 
@@ -427,13 +426,15 @@ class GatewayClient(GatewayProtocol):
         ----------
         bot : `retux.Bot`
             The bot instance to hook onto. This instance
-            can be any bot instance for interchangable
+            can be any bot instance for interchangeable
             handling of 1 main Gateway.
         """
         logger.debug("Hooking the bot into the Gateway.")
         self._bots.append(bot)
 
-    async def _dispatch(self, _name: str, data: dict | _Event | MISSING, *args, **kwargs):
+    async def _dispatch(
+        self, _name: str, data: list[dict] | dict | _Event | MISSING, *args, **kwargs
+    ):
         """
         Dispatches an event from the Gateway.
 
@@ -466,9 +467,6 @@ class GatewayClient(GatewayProtocol):
             if isinstance(data, dict) or isinstance(data, MISSING):
                 await bot._trigger(_name.lower(), data)
             else:
-                # FIXME: write a better sanitiser for internal values that
-                # may be passed to us by Discord.
-                # See important note: https://discord.com/developers/docs/topics/gateway#gateways
                 await bot._trigger(
                     _name.lower(),
                     data(

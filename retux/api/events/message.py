@@ -8,7 +8,7 @@ class _MessageEvents:
     """
 
     @classmethod
-    def lookup(cls, name: str) -> dict | MISSING:
+    def lookup(cls, name: str, data: dict) -> dict | MISSING:
         match name:
             case "MESSAGE_CREATE":
                 ...

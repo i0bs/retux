@@ -51,8 +51,8 @@ class InstallParams(Object):
     """The permissions the bot requests be in the bot role."""
 
 
-@define(kw_only=True)
-class PartialApplication(Partial, Object):
+@define()
+class PartialApplication(Partial):
     """
     Represents a partial application from Discord.
 

@@ -2,6 +2,7 @@ from attrs import define, field
 
 from ...client.resources.guild import UnavailableGuild
 from ...client.resources.application import PartialApplication
+from ...utils import list_c
 
 from .abc import _Event
 
@@ -35,6 +36,8 @@ class Ready(_Event):
         The type of session that the bot has established with the Gateway.
     session_id : `str`
         The ID of the bot's Gateway connection session, used for reconnection.
+    resume_gateway_url : `str`
+        The URL of the Gateway upon resuming an existing connection.
     shard : `list[int]`, optional
         The shards of the Gateway connection, if present.
     application : `PartialApplication`
@@ -53,7 +56,9 @@ class Ready(_Event):
     # TODO: implement User object
     user: dict = field(kw_only=True)
     """The user form of the bot application."""
-    guilds: list[dict] | list[UnavailableGuild] = field(converter=UnavailableGuild, kw_only=True)
+    guilds: list[dict] | list[UnavailableGuild] = field(
+        converter=list_c(UnavailableGuild), kw_only=True
+    )
     """The guilds unavailable to the bot."""
     # TODO: Investigate the guild_join_requests field.
     guild_join_requests: list | None = field(default=None, kw_only=True)
@@ -68,6 +73,8 @@ class Ready(_Event):
     """The type of session that the bot has established with the Gateway."""
     session_id: str = field(kw_only=True)
     """The ID of the bot's Gateway connection session, used for reconnection."""
+    resume_gateway_url: str = field(kw_only=True)
+    """The URL of the Gateway upon resuming an existing connection."""
     # TODO: Investigate the relationships field.
     relationships: list | None = field(default=None, kw_only=True)
     """The relationships associated to the bot application, if present."""
