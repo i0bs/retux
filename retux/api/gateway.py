@@ -10,6 +10,14 @@ from cattrs import structure_attrs_fromdict
 from trio import open_nursery, sleep, Nursery
 from trio_websocket import ConnectionClosed, WebSocketConnection, open_websocket_url
 
+from .error import (
+    InvalidToken,
+    RateLimited,
+    InvalidShard,
+    RequiresSharding,
+    InvalidIntents,
+    DisallowedIntents,
+)
 from .events.abc import _Event, _EventTable
 from .events.connection import HeartbeatAck, InvalidSession, Ready, Reconnect, Resumed
 
@@ -314,13 +322,30 @@ class GatewayClient(GatewayProtocol):
             f"{__gateway_url__}?v={self._meta.version}&encoding={self._meta.encoding}"
             f"{'' if self._meta.compress is None else f'&compress={self._meta.compress}'}"
         ) as self._conn:
-            self._closed = self._conn.closed
+            self._closed = bool(self._conn.closed)
 
             if self._stopped:
                 await self._conn.aclose()
             if self._closed:
-                await self._conn.aclose()
-                await self.reconnect()
+                try:
+                    match self._conn.closed.code:
+                        case 4004:
+                            raise InvalidToken
+                        case 4008:
+                            raise RateLimited
+                        case 4010:
+                            raise InvalidShard
+                        case 4011:
+                            raise RequiresSharding
+                        case 4013:
+                            raise InvalidIntents
+                        case 4014:
+                            raise DisallowedIntents
+                        case _:
+                            pass
+                except RateLimited:
+                    await self._conn.aclose()
+                    await self.reconnect()
 
             while not self._closed:
                 data = await self._receive()
