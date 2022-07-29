@@ -49,7 +49,7 @@ class Role(Object):
     hoist : `bool`
         If this role is pinned in the user listing.
     icon : `str`, optional
-        The role icon hash.
+        The hash of the roles icon, if present.
     unicode_emoji : `str`, optional
         The emoji unicode of the role, if present.
     position : `int`
