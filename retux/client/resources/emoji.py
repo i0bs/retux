@@ -51,7 +51,7 @@ class Emoji(Object):
     # roles: list[dict] | list[Role] | None = field(converter=optional_c(list_c(Role)))
     # TODO: Implement Role object
     # """A list of roles allowed to use this emoji."""
-    user: dict | User | None = field(converter=optional_c(User))
+    user: dict | User | None = field(converter=optional_c(User), default=None)
     """The user that created the emoji."""
     require_colons: bool | None = field(default=None)
     """Whether or not the emoji needs to be wrapped in colons."""
