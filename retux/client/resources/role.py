@@ -60,7 +60,7 @@ class Role(Object):
     managed : `bool`
         Whether this role is managed by an integration.
     tags : `RoleTags`, optional
-        The tags this role has.
+        The tags this role has, if present.
     """
 
     id: Snowflake | str = field(converter=Snowflake)
