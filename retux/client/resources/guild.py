@@ -5,6 +5,7 @@ from enum import IntEnum
 from attrs import define, field
 
 from .user import User, UserFlags, UserPremiumType
+from .emoji import Emoji
 
 from .abc import Object, Partial, Snowflake
 
@@ -50,10 +51,9 @@ class WelcomeScreenChannel:
     emoji_name: str | None = field(default=None)
     """The name of the emoji, if present."""
 
-    # TODO: implement Emoji object.
-    # @property
-    # def emoji(self) -> Emoji:
-    #     return Emoji(id=emoji_id, name=emoji_name)
+    @property
+    def emoji(self) -> Emoji:
+        return Emoji(id=self.emoji_id, name=self.emoji_name)
 
 
 @define(kw_only=True)
@@ -280,6 +280,8 @@ class Guild(Object):
         Whether the server has its widget enabled or not.
     widget_channel_id : `Snowflake`, optional
         The ID of the channel which the widget targets, if present.
+    emojis : `list[Emoji]`, optional
+        The Emojis that the guild owns.
     application_id : `Snowflake`, optional
         The ID of the application for the guild if created via. a bot.
     system_channel_id : `Snowflake`, optional
@@ -375,8 +377,8 @@ class Guild(Object):
     """The ID of the channel which the widget targets, if present."""
     # TODO: implement Role object.
     # roles: list[dict] | list[Role] = field(converter=Role, default=None)
-    # TODO: implement Emoji object.
-    # emojis: list[dict] | list[Emoji] | None = field(converter=Emoji, default=None)
+    emojis: list[dict] | list[Emoji] | None = field(converter=optional_c(list_c(Emoji)), default=None)
+    """The Emojis that the guild owns."""
     application_id: str | Snowflake | None = field(converter=optional_c(Snowflake), default=None)
     """The ID of the application for the guild if created via. a bot."""
     system_channel_id: str | Snowflake | None = field(converter=optional_c(Snowflake), default=None)
@@ -433,6 +435,8 @@ class GuildPreview(Object):
         The name of the guild being previewed.
     features : `list[str]`
         The enabled features of the previewed guild.
+    emojis : `list[Emoji]`
+        The guild's custom Emojis.
     approximate_member_count : `int`
         The approximated amount of members in the previewed guild.
     approximate_presence_count : `int`
@@ -456,8 +460,8 @@ class GuildPreview(Object):
     """The name of the guild being previewed."""
     features: list[str] = field()
     """The enabled features of the previewed guild."""
-    # TODO: implement Emoji object.
-    # emojis: list[dict] | list[Emoji] = field(converter=list_c(Emoji))
+    emojis: list[dict] | list[Emoji] = field(converter=list_c(Emoji))
+    """The guild's custom Emojis."""
     approximate_member_count: int = field()
     """The approximated amount of members in the previewed guild."""
     approximate_presence_count: int = field()
