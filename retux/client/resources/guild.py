@@ -378,7 +378,9 @@ class Guild(Object):
     """The ID of the channel which the widget targets, if present."""
     roles: list[dict] | list[Role] = field(converter=optional_c(list_c(Role)))
     """The Roles that the guild has"""
-    emojis: list[dict] | list[Emoji] | None = field(converter=optional_c(list_c(Emoji)), default=None)
+    emojis: list[dict] | list[Emoji] | None = field(
+        converter=optional_c(list_c(Emoji)), default=None
+    )
     """The Emojis that the guild owns."""
     application_id: str | Snowflake | None = field(converter=optional_c(Snowflake), default=None)
     """The ID of the application for the guild if created via. a bot."""

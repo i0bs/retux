@@ -4,7 +4,10 @@ from ...utils.converters import optional_c
 from attrs import define, field
 
 
-__all__ = ("Role", "RoleTags",)
+__all__ = (
+    "Role",
+    "RoleTags",
+)
 
 
 @define(kw_only=True)

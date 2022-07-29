@@ -15,7 +15,7 @@ and boilerplate code. retux tries to define itself off of similar ideals,
 but with a fair approach.
 
 Over time, I found it painful and frustrating to use various Discord libraries
-due to their reliance on good faith of a programmer to do things exactly the 
+due to their reliance on good faith of a programmer to do things exactly the
 way they intended. That is why, with retux, I wanted to create something better
 with these philosophies.
 
@@ -38,7 +38,7 @@ library provides. Granted, a Discord library is nothing more than a wrapper for 
 given, but it is almost expected that libraries take the extra step in providing an easily
 accessible set of tools and containers.
 
-### Versatile. 
+### Versatile.
 
 *Recycle current existing code paradigms elsewhere, so you can borrow assets off of one
 another.*
@@ -54,12 +54,12 @@ chugging along.*
 As society makes more technological advancements, it's become a concern of my own that any
 dependency, even a Discord library should consider looking into the possibility of ensuring
 runtime safety. With retux, your end-user facing code is generously checked and potentially
-sanitised if inputted wrongly to the API. You should be able to make code *work*, not 
+sanitised if inputted wrongly to the API. You should be able to make code *work*, not
 fight for technical correctness.
 
 ## Is this another fork?
 
-Despite the recent trend for developers to begin forking and maintaining their own Discord 
+Despite the recent trend for developers to begin forking and maintaining their own Discord
 libraries akin to [discord.py](https://github.com/Rapptz/discord.py), our library is entirely
 separate from any other and does not rely on other API wrappers. While one could argue that
 other competing libraries are better than one another, we respect each one's design decisions

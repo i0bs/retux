@@ -32,7 +32,7 @@ class TypingStart:
         outside of a DM.
     member : `Member`, optional
         The member who started typing.
-        
+
         This will only appear when a user is typing
         outside of a DM.
     """
@@ -53,7 +53,7 @@ class TypingStart:
     member: dict | Member | None = field(converter=optional_c(Member), default=None)
     """
     The member who started typing.
-    
+
     This will only appear when a user is typing
     outside of a DM.
     """
