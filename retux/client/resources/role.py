@@ -36,7 +36,7 @@ class RoleTags:
 @define(kw_only=True)
 class Role(Object):
     """
-    Represents a Role from Discord.
+    Represents a role from Discord.
 
     Attributes
     ----------
