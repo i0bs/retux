@@ -31,7 +31,7 @@ class Emoji(Object):
     availible : `bool`, optional
         Whether or not the emoji is availible.
 
-        This may be false if the server that owns 
+        Defaults to `False` if the server that owns 
         the emoji lost a level of boosting.
     """
     id: str | Snowflake | None = field(converter=optional_c(Snowflake), default=None)
@@ -63,6 +63,6 @@ class Emoji(Object):
     """
     Whether or not the emoji is available.
     
-    This may be false if the server that owns 
+    Defaults to `False` if the server that owns 
     the emoji lost a level of boosting.
     """
