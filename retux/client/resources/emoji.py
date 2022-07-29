@@ -28,7 +28,7 @@ class Emoji(Object):
         Whether or not the emoji is managed.
     animated : `bool`, optional
         Whether or not the emoji is animated.
-    availible : `bool`, optional
+    available : `bool`
         Whether or not the emoji is available.
 
         Defaults to `False` if the server that owns 
