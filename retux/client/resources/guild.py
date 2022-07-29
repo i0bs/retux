@@ -6,6 +6,7 @@ from attrs import define, field
 
 from .user import User, UserFlags, UserPremiumType
 from .emoji import Emoji
+from .sticker import Sticker
 
 from .abc import Object, Partial, Snowflake
 
@@ -313,6 +314,8 @@ class Guild(Object):
         The approxiated amount of presences in the guild.
     welcome_screen : `WelcomeSceren`, optional
         The welcome screen of the guild, if present.
+    stickers : `list[Sticker]`, optional
+        The stickers that the guild owns.
     """
 
     id: str | Snowflake = field(converter=Snowflake)
@@ -418,8 +421,8 @@ class Guild(Object):
         converter=optional_c(WelcomeScreen), default=None
     )
     """The welcome screen of the guild, if present."""
-    # TODO: implement Sticker object.
-    # stickers: list[dict] | list[Sticker] | None = field(converter=Sticker, default=None)
+    stickers: list[dict] | list[Sticker] | None = field(converter=Sticker, default=None)
+    """The stickers that the guild owns."""
 
 
 @define(kw_only=True)
@@ -452,6 +455,8 @@ class GuildPreview(Object):
     description : `str`, optional
         The description of the guild being previewed, if presently
         determined as a Community server.
+    stickers : `list[Sticker]`, optional
+        The stickers of the guild being previewed.
     """
 
     id: str | Snowflake = field(converter=Snowflake)
@@ -483,8 +488,8 @@ class GuildPreview(Object):
     The description of the guild being previewed, if presently
     determined as a Community server.
     """
-    # TODO: implement Sticker object.
-    # stickers: list[dict] | list[Sticker] | None = field(converter=optional_c(list_c(Sticker)), default=None)
+    stickers: list[dict] | list[Sticker] | None = field(converter=optional_c(list_c(Sticker)), default=None)
+    """The stickers of the guild being previewed."""
 
 
 @define(kw_only=True)
