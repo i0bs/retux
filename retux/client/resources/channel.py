@@ -4,6 +4,7 @@ from attrs import define, field
 from retux.client.resources.abc import Snowflake, Object, Partial
 from .application import Application
 from .user import User
+from .role import Role
 from ...utils.converters import optional_c, list_c
 
 __all__ = (
@@ -1953,14 +1954,12 @@ class Message(Object):
     """Whether or not this message mentions everyone."""
     mentions: list[dict] | list[User] = field(converter=list_c(User))
     """Users specifically mentioned in this message."""
-    # TODO: Implement Role object.
-    # mention_roles: list[dict] | list[Role] = field(converter=list_c(Role))
+    mention_roles: list[dict] | list[Role] = field(converter=list_c(Role))
     """Roles specifically mentioned in this message."""
     mention_channels: list[dict] | list[ChannelMention] | None = field(converter=optional_c(list_c(ChannelMention)), default=None)
     """Channels specifically mentioned in this message."""
-    # TODO: Implement Attachment object
-    # attachments: list[dict] | list[Attachment] = field(converter=list_c(Attachment))
-    # """The attachments of the message."""
+    attachments: list[dict] | list[Attachment] = field(converter=list_c(Attachment))
+    """The attachments of the message."""
     embeds: list[dict] | list[Embed] = field(converter=list_c(Embed))
     """The embeds of the message."""
     reactions: list[dict] | list[Reaction] | None = field(converter=optional_c(list_c(Reaction)), default=None)

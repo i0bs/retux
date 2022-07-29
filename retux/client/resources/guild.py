@@ -6,6 +6,7 @@ from attrs import define, field
 
 from .user import User, UserFlags, UserPremiumType
 from .emoji import Emoji
+from .role import Role
 
 from .abc import Object, Partial, Snowflake
 
@@ -375,8 +376,8 @@ class Guild(Object):
     """Whether the server has its widget enabled or not."""
     widget_channel_id: str | Snowflake | None = field(converter=optional_c(Snowflake), default=None)
     """The ID of the channel which the widget targets, if present."""
-    # TODO: implement Role object.
-    # roles: list[dict] | list[Role] = field(converter=Role, default=None)
+    roles: list[dict] | list[Role] = field(converter=optional_c(list_c(Role)))
+    """The Roles that the guild has"""
     emojis: list[dict] | list[Emoji] | None = field(converter=optional_c(list_c(Emoji)), default=None)
     """The Emojis that the guild owns."""
     application_id: str | Snowflake | None = field(converter=optional_c(Snowflake), default=None)

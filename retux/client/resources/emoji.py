@@ -1,7 +1,8 @@
 from attrs import define, field
 from .abc import Object, Snowflake
 from .user import User
-from ...utils import optional_c
+from .role import Role
+from ...utils import optional_c, list_c
 
 @define()
 class Emoji(Object):
@@ -48,9 +49,8 @@ class Emoji(Object):
     is standard, otherwise it is the name 
     of the emoji.
     """
-    # roles: list[dict] | list[Role] | None = field(converter=optional_c(list_c(Role)))
-    # TODO: Implement Role object
-    # """A list of roles allowed to use this emoji."""
+    roles: list[dict] | list[Role] | None = field(converter=optional_c(list_c(Role)))
+    """A list of roles allowed to use this emoji."""
     user: dict | User | None = field(converter=optional_c(User))
     """The user that created the emoji."""
     require_colons: bool | None = field(default=None)
