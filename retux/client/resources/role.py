@@ -52,7 +52,7 @@ class Role(Object):
     icon : `str`, optional
         The role icon hash.
     unicode_emoji : `str`, optional
-        The role unicode emoji.
+        The emoji unicode of the role, if present.
     position : `int`
         The position of the role.
     permissions : `str`
