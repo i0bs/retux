@@ -74,7 +74,7 @@ class Role(Object):
     icon: str | None = field(default=None)
     """The role icon hash, if present."""
     unicode_emoji: str | None = field(default=None)
-    """The role unicode emoji."""
+    """The emoji unicode of the role, if present."""
     position: int = field()
     """The position of the role."""
     permissions: str = field()
