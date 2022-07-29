@@ -84,4 +84,4 @@ class Role(Object):
     mentionable: bool = field()
     """Whether this role is mentionable."""
     tags: RoleTags | None = field(converter=optional_c(RoleTags))
-    """The tags this role has."""
+    """The tags this role has, if present."""
