@@ -13,7 +13,7 @@ __all__ = (
 @define(kw_only=True)
 class RoleTags:
     """
-    Represents RoleTags from a Discord Role.
+    Represents the tags of a role from Discord.
 
     Attributes
     ----------
