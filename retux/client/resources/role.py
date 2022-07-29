@@ -29,7 +29,7 @@ class RoleTags:
     """The id of the bot this role belongs to."""
     integration_id: Snowflake | str | None = field(converter=optional_c(Snowflake))
     """The id of the integration this role belongs to."""
-    premium_subscriber: bool | None = field(default=None)
+    premium_subscriber: bool = field(default=False)
     """Whether this is the guild's premium subscriber role."""
     # Discord just says`null` for the type here, although because it is documented as "whether" I assume it's `bool`?
 
