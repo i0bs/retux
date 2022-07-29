@@ -21,7 +21,7 @@ class RoleTags:
         The ID of the bot this role belongs to.
     integration_id : `Snowflake`, optional
         The ID of the integration this role belongs to.
-    premium_subscriber : `bool`, optional
+    premium_subscriber : `bool`
         Whether this is the guild's premium subscriber role.
     """
 
