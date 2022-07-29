@@ -18,7 +18,7 @@ class RoleTags:
     Attributes
     ----------
     bot_id : `Snowflake`, optional
-        The id of the bot this role belongs to.
+        The ID of the bot this role belongs to.
     integration_id : `Snowflake`, optional
         The id of the integration this role belongs to.
     premium_subscriber : `bool`, optional
