@@ -13,7 +13,7 @@ class Emoji(Object):
     id : `Snowflake`, optional
         The ID of the Emoji.
 
-        Only availible on guild created emojis.
+        Only available on guild created emojis.
     name : `str`, optional
         The name of the emoji.
 
@@ -40,7 +40,7 @@ class Emoji(Object):
     """
     The ID of the Emoji.
     
-    Only availible on guild created emojis.
+    Only available on guild created emojis.
     """
     name: str | None = field(default=None)
     """
@@ -61,9 +61,9 @@ class Emoji(Object):
     """Whether or not the emoji is managed."""
     animated: bool | None = field(default=None)
     """Whether or not the emoji is animated."""
-    availible: bool | None = field(default=None)
+    available: bool = field(default=False)
     """
-    Whether or not the emoji is availible.
+    Whether or not the emoji is available.
     
     This may be false if the server that owns 
     the emoji lost a level of boosting.
