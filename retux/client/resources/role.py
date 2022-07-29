@@ -31,7 +31,6 @@ class RoleTags:
     """The id of the integration this role belongs to."""
     premium_subscriber: bool = field(default=False)
     """Whether this is the guild's premium subscriber role."""
-    # Discord just says`null` for the type here, although because it is documented as "whether" I assume it's `bool`?
 
 
 @define(kw_only=True)
