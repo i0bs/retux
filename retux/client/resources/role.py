@@ -72,7 +72,7 @@ class Role(Object):
     hoist: bool = field()
     """If this role is pinned in the user listing."""
     icon: str | None = field(default=None)
-    """The role icon hash."""
+    """The role icon hash, if present."""
     unicode_emoji: str | None = field(default=None)
     """The role unicode emoji."""
     position: int = field()
