@@ -20,8 +20,6 @@ class Emoji(Object):
         This is a unicode emoji if the emoji 
         is standard, otherwise it is the name 
         of the emoji.
-    roles : `list[Role]`, optional
-        A list of roles allowed to use this emoji.
     user : `User`, optional
         The user that created the emoji.
     require_colons : `bool`, optional
