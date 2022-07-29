@@ -3,7 +3,7 @@ from .abc import Object, Snowflake
 from .user import User
 from ...utils import optional_c
 
-@define(kwargs_only=False)
+@define()
 class Emoji(Object):
     """
     Represents an Emoji from Discord.
