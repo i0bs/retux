@@ -29,7 +29,7 @@ class Emoji(Object):
     animated : `bool`, optional
         Whether or not the emoji is animated.
     availible : `bool`, optional
-        Whether or not the emoji is availible.
+        Whether or not the emoji is available.
 
         Defaults to `False` if the server that owns 
         the emoji lost a level of boosting.
